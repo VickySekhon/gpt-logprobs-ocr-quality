@@ -10,6 +10,7 @@ from openai import OpenAI
 # ─────────────── logging setup ────────────────────────────────
 class TeeOutput:
     """Captures all print output while also displaying to console."""
+
     def __init__(self, original_stdout):
         self.original_stdout = original_stdout
         self.buffer = io.StringIO()
@@ -30,14 +31,12 @@ _tee = TeeOutput(sys.stdout)
 sys.stdout = _tee
 
 # ─────────────── configuration ───────────────────────────────
-MODEL = "gpt-4o"  # must support logprobs
+MODEL = "gpt-4o"
 TOKEN_PRINT_LIMIT = 3  # diagnostics: how many tokens to show
 EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "latex", "json", "tag", ""}
-LOG2 = math.log(2)  # ln 2  (nat → bit), base not specified = natural log of 2
-
 dotenv.load_dotenv()
 
-# ──────────────── CLI ────────────────────────────────────────
+# ──────────────── CLI parser ────────────────────────────────────────
 parser = argparse.ArgumentParser(
     description=(
         "Convert a scanned page to LaTeX (auto-adds a standard "
@@ -71,18 +70,17 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+# K logprobs to consider, W window size, TOP_M windows considered
 TOP_K = args.top_k
-# Window size stuff
 W = args.window_size
 TOP_M = args.top_m
 
 IMAGE_PATH = Path(os.path.join(os.getcwd(), args.image))
-# IMAGE_PATH = Path(os.path.join(os.getcwd(), "data/images/3200797037.jpg"))
 if not IMAGE_PATH.exists():
-    sys.exit(f"❌ File not found: {IMAGE_PATH}")
+    sys.exit(f"Error reading image. Path: '{IMAGE_PATH}' was not found.")
 
 
-# ─────────────── helpers ──────────────────────────────────────
+# ─────────────── helper functions ──────────────────────────────────────
 def encode_image(path: str) -> str:
     with open(path, "rb") as fh:
         return base64.b64encode(fh.read()).decode("utf-8")
@@ -90,6 +88,10 @@ def encode_image(path: str) -> str:
 
 def pretty(alts):
     return ", ".join(f"{a.token!r}:{math.exp(a.logprob):.3f}" for a in alts)
+
+
+def calculate_shannon_entropy(p):
+    return p * math.log(p, 2)
 
 
 def make_full_latex(latex_output: str) -> str:
@@ -106,7 +108,7 @@ def make_full_latex(latex_output: str) -> str:
 
     cleaned = latex_output.strip()
 
-    # ── remove ``` fences ─────────────────────────────────────────────────
+    # remove ``` fences
     fence_prefixes = ("```latex", "```tex", "```")
     for prefix in fence_prefixes:
         if cleaned.lower().startswith(prefix):
@@ -117,12 +119,12 @@ def make_full_latex(latex_output: str) -> str:
     if cleaned.endswith("```"):
         cleaned = cleaned[:-3].rstrip()
 
-    # ── if already a full document, just return it ───────────────────────
+    # if already a full document, just return it
     # We look for \documentclass anywhere (typically near the top).
     if re.search(r"\\documentclass", cleaned):
         return cleaned
 
-    # ── otherwise add minimal header & footer ─────────────────────────────
+    # otherwise add minimal header & footer
     header = (
         "\\documentclass[12pt]{article}\n"
         "\\usepackage{amsmath,amssymb,amsthm}\n\n"
@@ -139,8 +141,6 @@ if api_key is None:
     raise ValueError("Please set the OPENAI_API_KEY environment variable.")
 client = OpenAI(api_key=api_key)
 
-# ─────────────── system & user messages with image ────────────
-
 system_prompt = (
     "You are an expert text processor specialized in converting a scanned "
     "document into properly formatted LaTeX. Identify every mathematical "
@@ -155,7 +155,6 @@ user_text = (
     "• Preserve all non-mathematical content exactly.\n"
     "• Return ONLY the LaTeX code inside a single ```latex … ``` fence."
 )
-
 
 messages = [
     {"role": "system", "content": system_prompt},
@@ -175,18 +174,17 @@ messages = [
 ]
 
 
-# ─────────────── chat wrapper ─────────────────────────────────
 def chat(msgs):
     while True:
         try:
             return client.chat.completions.create(
                 model=MODEL,
                 messages=msgs,
-                temperature=0.5,
-                top_p=0.9,
-                n=1,
-                seed=12345,
-                max_tokens=10_000,
+                temperature=0.5, # High = more creative, Low = more focused
+                top_p=0.9, # Model looks at the top 90% of tokens it generates
+                n=1, # Controls how much model repeats itself (-2 - 2, with '+' value being penalize for repetition
+                seed=12345, # Give same seed ever run to try to make model responses predictable
+                max_tokens=10_000, # Highest # of tokens model will generate in response 
                 logprobs=True,
                 top_logprobs=TOP_K,
             )
@@ -195,7 +193,7 @@ def chat(msgs):
             time.sleep(5)
 
 
-# ─────────────── main single request ──────────────────────────
+# ─────────────── main ──────────────────────────
 resp = chat(messages)
 choice = resp.choices[0]
 reply = choice.message.content.strip()
@@ -218,48 +216,52 @@ tok_infos = [
     for t in choice.logprobs.content
     if t.token not in EXCLUDE_TOKENS and t.token.strip()
 ]
-#print(f"Logprobs: {tok_infos}\n\n")
+
+# For debugging: write log probabilities to a file for review
 write_path = "data/log-probs/1.txt"
 with open(write_path, "w", encoding="utf-8") as f2:
-    f2.writelines(str(tok_infos)) 
+    f2.writelines(str(tok_infos))
 
 N = len(tok_infos)
 if N == 0:
     sys.exit("No tokens to analyse.")
-    
-def calculate_shannon_entropy(p):
-    return p * math.log(p, 2)    
 
 # ─────────────── per-token entropy + totals ───────────────────
 total_H = 0.0
-pos_entropy = []  # store entropy of each position for sliding window
+# Store entropy of each position for sliding window
+pos_entropy = []
 
-for info in tok_infos: # a given token
+# A given token
+for info in tok_infos:
     H_pos, mass = 0.0, 0.0
-    for alt in info.top_logprobs[:TOP_K]: # find top k logprobs
-        p = math.exp(alt.logprob) # get the orignal probability
+
+    top_k_logprobs = info.top_logprobs[:TOP_K]
+    # loop through top k logprobs
+    for alt in top_k_logprobs:
+        # get the orignal probability
+        p = math.exp(alt.logprob)
         mass += p
+
         if p == 0.0:
             continue
-        #H_pos += -p * alt.logprob / LOG2  # −p ln p  (→ bits)
-        H_pos += calculate_shannon_entropy(p) # entropy calc -p * log_2(p)
 
-    #p_tail = max(0.0, 1.0 - mass)  # residual prob.
-    p_tail = 1.0 - mass  # residual prob.
-    
+        H_pos += calculate_shannon_entropy(p)
+
+    # Residual probability
+    p_tail = 1.0 - mass
+
     if p_tail > 0.0:
-        #H_pos += -p_tail * math.log(p_tail) / LOG2
         H_pos += calculate_shannon_entropy(p_tail)
 
-    H_pos = -H_pos # convert entropy to positive
+    # Convert entropy to positive
+    H_pos = -H_pos
     total_H += H_pos
     pos_entropy.append(H_pos)
 
-avg_H = total_H / N # page-level statistic
-print(f"Observed tokens: {N}")
-print(f"Top-k entropy  (k={TOP_K}): {total_H:.6f} bits")
-print(f"Average bits/token         : {avg_H:.6f} bits/token")
-print(f"Total tokens: {len(pos_entropy)}")
+avg_H = total_H / N
+print(f"Token count: {N}")
+print(f"Total entropy across all {TOP_K} top-k for all {N} tokens: {total_H:.6f} bits")
+print(f"Average entropy (page-level): {avg_H:.6f} bits/token")
 
 # ─────────────── sliding-window entropy ───────────────────────
 if W <= 0:
@@ -272,15 +274,14 @@ if N < W:
 else:
     # running window sum for O(N) computation
     window_sum = sum(pos_entropy[:W])
-    windows = [(window_sum / W, 0)]  # (avg, start_idx)
+    # (average entropy within window, window index)
+    windows = [(window_sum / W, 0)]
 
-    # for start in range(1, N - W + 1): # N = # of different tokens
-    #     window_sum += pos_entropy[start + W - 1] - pos_entropy[start - 1]
-    #     windows.append((window_sum / W, start))
-
-    for start in range(N - W): # N = # of different tokens
+    for start in range(N - W):
         window_sum += pos_entropy[start + W] - pos_entropy[start]
-        windows.append((window_sum / W, start+1)) # don't overwrite last window_sum
+        windows.append(
+            (window_sum / W, start + 1)
+        )  # +1 so we do not overwrite last window_sum
 
     # pick top-M windows with largest average entropy (O(n))
     top_windows = heapq.nlargest(TOP_M, windows, key=lambda x: x[0])
@@ -291,10 +292,10 @@ else:
     )
     for rank, (avg_w, start) in enumerate(top_windows, 1):
         end = start + W - 1
-        snippet = "".join(tok_infos[i].token for i in range(start, end + 1))
+        all_tokens_in_window = "".join(tok_infos[i].token for i in range(start, end + 1))
         print(
             f"{rank:>2}. [{start:>3}–{end:>3}]  "
-            f'avg H = {avg_w:.4f} bits/token  →  "{snippet}"'
+            f'avg H = {avg_w:.4f} bits/token  →  "{all_tokens_in_window}"'
         )
 
 # ─────────────── diagnostics: first / last tokens ─────────────
@@ -319,6 +320,6 @@ log_file = log_dir / f"log_{timestamp}.txt"
 
 try:
     log_file.write_text(_tee.get_log(), encoding="utf-8")
-    print(f"\n📝 Log saved to: {log_file}")
+    print(f"\nLog saved to: {log_file}")
 except Exception as e:
-    print(f"\n❌ Error writing log file: {e}")
+    print(f"\nError writing log file: {e}")
