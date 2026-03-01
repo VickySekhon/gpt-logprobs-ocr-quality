@@ -6,6 +6,9 @@ from pathlib import Path
 from datetime import datetime
 from openai import OpenAI
 
+from normalization import *
+from metrics import cer
+
 
 # ─────────────── logging setup ────────────────────────────────
 class TeeOutput:
@@ -33,7 +36,7 @@ sys.stdout = _tee
 # ─────────────── configuration ───────────────────────────────
 MODEL = "gpt-4o"
 TOKEN_PRINT_LIMIT = 3  # diagnostics: how many tokens to show
-EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "latex", "json", "tag", ""}
+EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "latex", "json", "tag", "", "\\"}
 dotenv.load_dotenv()
 
 # ──────────────── CLI parser ────────────────────────────────────────
@@ -93,6 +96,15 @@ def pretty(alts):
 def calculate_shannon_entropy(p):
     return p * math.log(p, 2)
 
+def load_ground_truth(path_to_image):
+    path_pieces = path_to_image.split("/")
+    path_pieces[1] = "ground-truth"
+    path_pieces[2] = path_to_image[2][:-4] + ".txt" # convert to gt path 
+    gt_path = "/".join(path_pieces)
+    
+    with open(gt_path, "r", encoding="utf-8") as _gt:
+        gt = _gt.read()
+    return gt
 
 def make_full_latex(latex_output: str) -> str:
     """
@@ -202,7 +214,6 @@ reply = choice.message.content.strip()
 print("\nAssistant reply (LaTeX only expected):\n")
 print(reply, "\n")
 
-
 # save LaTeX file next to the image
 full_latex = make_full_latex(reply)
 tex_file_path = IMAGE_PATH.with_suffix(".tex")
@@ -211,7 +222,6 @@ try:
     print(f"\nLaTeX output saved to: {tex_file_path}")
 except Exception as e:
     print(f"\nError writing LaTeX file: {e}")
-
 # ─────────────── collect & filter tokens ──────────────────────
 tok_infos = [
     t
@@ -280,11 +290,21 @@ else:
     # (average entropy within window, window index)
     windows = [(window_sum / W, 0)]
 
-    for i, start in enumerate(range(N - W), 1):
-        window_sum += pos_entropy[start + W] - pos_entropy[start]
-        windows.append(
-            (window_sum / W, i)
-        )
+    # avoid overlapping top windows
+    i = W
+    while i < N:
+        window_sum = 0
+        window_sum = sum(pos_entropy[i:i+W])
+        windows.append((window_sum, i))
+        i += W
+
+    # for i, start in enumerate(range(N - W), 1):
+    #     for j in range(start + W, start + 2*W):
+    #         window_sum += pos_entropy[j] - pos_entropy[]
+    #     window_sum += pos_entropy[start + W] - pos_entropy[start]
+    #     windows.append(
+    #         (window_sum / W, i)
+    #     )
 
     top_windows = heapq.nlargest(TOP_M, windows, key=lambda x: x[0])
 
@@ -325,3 +345,9 @@ try:
     print(f"\nLog saved to: {log_file}")
 except Exception as e:
     print(f"\nError writing log file: {e}")
+
+# ─────────────── CER calculation ───────────────────────────────
+# load ground-truth
+gt = load_ground_truth(IMAGE_PATH)
+norm_ocr, norm_gt = normalize_text(full_latex, gt)
+_cer = cer(norm_ocr, norm_gt)

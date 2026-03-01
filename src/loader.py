@@ -1,6 +1,10 @@
 import pandas as pd
 import os
 
+"""
+Loads the BLN600 dataset and a page from the dataset based on it's ID.
+"""
+
 IMAGE_PATH = os.path.join(os.getcwd(), "data/images/")
 GT_PATH = os.path.join(os.getcwd(), "data/ground-truth/")
 OCR_PATH = os.path.join(os.getcwd(), "data/ocr-text/")
@@ -52,7 +56,7 @@ def load_bln600_metadata():
      
      return df
 
-def load_text_pair(page_id):
+def load_text_pair(page_id) -> pd.Series:
      df = load_bln600_metadata()
      
      page_entry = df[df["page-id"] == page_id]
@@ -60,9 +64,12 @@ def load_text_pair(page_id):
           print(f"Page-id: {page_id} was not found.")
           return
      
-     return (page_entry["ground_truth"], page_entry["ocr_text"])
+     return page_entry["ocr_text"], page_entry["ground_truth"]
      
 
-x = load_text_pair(3200797037)
-if x:
-     print(x)
+if __name__ == "__main__":
+     x = load_text_pair(3200797037)
+     if x:
+          ocr, gt = x
+          print(f"OCR: {ocr}")
+          print(f"GT: {gt}")
