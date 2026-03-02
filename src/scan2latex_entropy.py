@@ -36,7 +36,7 @@ sys.stdout = _tee
 # ─────────────── configuration ───────────────────────────────
 MODEL = "gpt-4o"
 TOKEN_PRINT_LIMIT = 3  # diagnostics: how many tokens to show
-EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "latex", "json", "tag", "", "\\"}
+EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "latex", "json", "tag", "\\"}
 dotenv.load_dotenv()
 
 # ──────────────── CLI parser ────────────────────────────────────────
