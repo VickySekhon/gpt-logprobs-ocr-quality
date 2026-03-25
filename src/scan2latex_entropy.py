@@ -1,6 +1,8 @@
-# python3 src/scan2latex_entropy.py --top-k 1 --window-size 5 --top-m 10 --norm all data/images/3200797037.jpg
+"""
+Loads a page excerpt, converts it into latex, and then runs sliding window analysis to determine areas with most entropy.
 
-#!/usr/bin/env python3
+Usage: <python3 src/scan2latex_entropy.py --top-k 1 --window-size 5 --top-m 10 --norm all data/images/3200797037.jpg>
+"""
 import os, sys, time, math, base64, argparse, heapq, dotenv, io
 from pathlib import Path
 from datetime import datetime

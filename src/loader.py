@@ -1,7 +1,6 @@
 """
 Loads the BLN600 dataset and a page from the dataset based on it's ID.
 """
-
 import pandas as pd
 import os
 
