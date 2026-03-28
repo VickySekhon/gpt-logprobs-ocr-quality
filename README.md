@@ -58,7 +58,7 @@ Correlations
 
 Confidence Intervals
 - Bootstrap CI
-    * Instead of assuming data follows normal distribution, you re-sample points and compute a statistic on them, and then compute the tails based on your CI to get the range in which 'CI' amount of your computed statistic values lie
+    * Instead of assuming data follows normal distribution, you re-sample points and compute a statistic on them, and then strip the tails based on your CI to get the range in which 'CI' amount of your computed statistic values lie
 
 TESTS:
 - https://www.diffchecker.com/szQ35Wnw/ (normalized)
