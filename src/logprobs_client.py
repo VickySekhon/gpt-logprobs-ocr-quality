@@ -13,16 +13,53 @@ from utils import MODEL, TOP_K
 client = init_openai_client()
 _cache_lock = threading.Lock()
 
-def transcribe_with_logprobs(image_path, top_k=5, model=MODEL, prompt_version=1):
+
+def flush_cache_updates(cache_updates: dict) -> bool:
+    """
+    Merge an in-memory set of cache entries into cache/cache.json once.
+    Returns True on success.
+    """
+    if not cache_updates:
+        return True
+
+    with _cache_lock:
+        cache = load_cache_json()
+        cache.update(cache_updates)
+        return write_cache_json(cache)
+
+
+def transcribe_with_logprobs(
+    image_path,
+    top_k=5,
+    model=MODEL,
+    prompt_version=1,
+    *,
+    cache_snapshot=None,
+    local_cache=None,
+    persist_cache=True,
+):
     page_id = get_page_id_from_path(image_path)
     cache_key = get_cache_key(page_id, model, top_k, prompt_version)
 
-    # Fast cache check under lock
-    with _cache_lock:
-        cache = load_cache_json()
-        value = cache.get(cache_key)
+    # 1) Check worker-local cache first.
+    if local_cache is not None:
+        value = local_cache.get(cache_key)
         if value:
             return value["transcript"], value["token_logprobs"]
+
+    # 2) Check preloaded snapshot (read-only for worker threads).
+    if cache_snapshot is not None:
+        value = cache_snapshot.get(cache_key)
+        if value:
+            return value["transcript"], value["token_logprobs"]
+
+    # 3) Fallback to on-disk cache check for non-worker/single-thread use.
+    if cache_snapshot is None:
+        with _cache_lock:
+            cache = load_cache_json()
+            value = cache.get(cache_key)
+            if value:
+                return value["transcript"], value["token_logprobs"]
     
     encoded_image = encode_image(image_path)
 
@@ -76,19 +113,26 @@ def transcribe_with_logprobs(image_path, top_k=5, model=MODEL, prompt_version=1)
 
     transcript_text = choice.message.content.strip()
     token_logprobs = get_token_logprobs(choice, top_k)
+    cache_value = {"transcript": transcript_text, "token_logprobs": token_logprobs}
 
-    # Cache write path: lock + reload to avoid overwriting concurrent updates
-    with _cache_lock:
-        cache = load_cache_json()
-        value = cache.get(cache_key)
-        if value:
-            # Another worker wrote this entry while we were waiting on API.
-            return value["transcript"], value["token_logprobs"]
+    # Worker-local mode: defer on-disk merge until the end.
+    if local_cache is not None:
+        local_cache[cache_key] = cache_value
+        return transcript_text, token_logprobs
 
-        cache[cache_key] = {"transcript": transcript_text, "token_logprobs": token_logprobs}
-        successful = write_cache_json(cache)
-    if not successful:
-        print(f"Transcribed file {page_id} was not written to cache.")
+    # Single-thread/default mode: persist immediately.
+    if persist_cache:
+        with _cache_lock:
+            cache = load_cache_json()
+            value = cache.get(cache_key)
+            if value:
+                # Another caller wrote this entry while we were waiting on API.
+                return value["transcript"], value["token_logprobs"]
+
+            cache[cache_key] = cache_value
+            successful = write_cache_json(cache)
+        if not successful:
+            print(f"Transcribed file {page_id} was not written to cache.")
     
     return transcript_text, token_logprobs
 

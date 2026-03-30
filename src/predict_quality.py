@@ -8,29 +8,36 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 
 from loader import load_text_pair
-from logprobs_client import transcribe_with_logprobs
+from logprobs_client import transcribe_with_logprobs, flush_cache_updates
 from entropy import token_entropies_from_logprobs
 from metrics import cer, levenshtein_distance
 from normalization import normalize_text
-from utils import get_page_id_from_image, is_repetitive, write_anomalies
+from utils import get_page_id_from_image, is_repetitive, write_anomalies, load_cache_json
 
 NORMALIZATION_TYPE = "all"
 _anomaly_lock = Lock()
 
-def process_page(page_id, top_k):
+def process_page(page_id, top_k, cache_snapshot):
+     local_cache = {}
      image_path, ground_truth_text = load_text_pair(page_id)
-     generated_transcript_text, token_logprobs = transcribe_with_logprobs(image_path, top_k)
+     generated_transcript_text, token_logprobs = transcribe_with_logprobs(
+          image_path,
+          top_k,
+          cache_snapshot=cache_snapshot,
+          local_cache=local_cache,
+          persist_cache=False,
+     )
 
      # GPT-4o sometimes reaches a failure mode called repetition loop causing it to repeat phrases nonsensically.
      if is_repetitive(generated_transcript_text):
           with _anomaly_lock:
                write_anomalies(page_id, generated_transcript_text, ground_truth_text)
-          return None
+          return None, local_cache
 
      token_entropies = token_entropies_from_logprobs(token_logprobs)
      n_tokens = len(token_entropies)
      if n_tokens == 0:
-          return None
+          return None, local_cache
 
      total_bits = sum(token_entropies)
      avg_bits_per_token = total_bits / n_tokens
@@ -54,7 +61,7 @@ def process_page(page_id, top_k):
           "gt_length": len(ground_truth_text_norm),
           "normalization_profile": NORMALIZATION_TYPE,
      }
-     return row
+     return row, local_cache
 
 
 def predict_subset(top_k, max_pages, output, workers):
@@ -64,25 +71,38 @@ def predict_subset(top_k, max_pages, output, workers):
      # Get random sample
      np.random.shuffle(page_ids)
 
+     # Read once; workers treat this as read-only cache snapshot.
+     cache_snapshot = load_cache_json()
+
      target_page_ids = list(page_ids[:max_pages]) if max_pages is not None else list(page_ids)
      max_target = len(target_page_ids)
 
      data = []
+     cache_updates = {}
      processed_count = 0
      with ThreadPoolExecutor(max_workers=workers) as executor:
-          futures = {executor.submit(process_page, int(page_id), top_k): int(page_id) for page_id in target_page_ids}
+          futures = {
+               executor.submit(process_page, int(page_id), top_k, cache_snapshot): int(page_id)
+               for page_id in target_page_ids
+          }
           for future in as_completed(futures):
                page_id = futures[future]
                try:
-                    row = future.result()
+                    row, local_cache = future.result()
                except Exception as e:
                     print(f"Failed page {page_id}: {e}")
                     continue
 
                processed_count += 1
                print(f"Processed {processed_count}/{max_target} pages (workers={workers}, available={page_total})...")
+               if local_cache:
+                    cache_updates.update(local_cache)
                if row is not None:
                     data.append(row)
+
+     successful = flush_cache_updates(cache_updates)
+     if not successful:
+          print("Warning: failed to flush cache updates to cache/cache.json")
      
      df = pd.DataFrame(data)
      df.to_csv(f"{output}/results_k_{top_k}.csv")
@@ -137,15 +157,18 @@ def compute_bootstrap_confidence_interval(df: pd.DataFrame, resample_count, samp
           p = compute_spearman(x,y)
           total_r.append(r)
           total_p.append(p)
-     ci_lower_bound = np.percentile(total_r, 2.5)
-     ci_upper_bound = np.percentile(total_r, 97.5)
+     r_ci_lower_bound = np.percentile(total_r, 2.5)
+     r_ci_upper_bound = np.percentile(total_r, 97.5)
+     
+     p_ci_lower_bound = np.percentile(total_p, 2.5)
+     p_ci_upper_bound = np.percentile(total_p, 97.5)
      
      # Plot correlation values across bootstrap iterations.
      x = [i for i in range(1, len(total_r) + 1)]
      visualize_correlation_coefficient(x, total_r, "Pearson", top_k)
      visualize_correlation_coefficient(x, total_p, "Spearman", top_k)
      
-     return ci_lower_bound, ci_upper_bound
+     return r_ci_lower_bound, r_ci_upper_bound, p_ci_lower_bound, p_ci_upper_bound
      
 def main():
      parser = argparse.ArgumentParser(description=("Run prediction pipeline on entire BLN600 dataset"))
@@ -174,8 +197,9 @@ def main():
      p = compute_spearman(x, y)
      print(f"Pearson Correlation Coefficient: {r:.3f}\nSpearman Correlation Coefficient: {p:.3f}")
      resample_count, sample_size = 1000, len(df)
-     ci_lower_bound, ci_upper_bound = compute_bootstrap_confidence_interval(df, resample_count, sample_size, top_k)
-     print(f"Across {resample_count} resamples of size {sample_size}, 95% of the computed 'r' values lie between range ({ci_lower_bound:.3f}, {ci_upper_bound:.3f})\nThe original computed value of 'r' on {sample_size:.3f} samples was {r}")
+     r_ci_lower_bound, r_ci_upper_bound, p_ci_lower_bound, p_ci_upper_bound = compute_bootstrap_confidence_interval(df, resample_count, sample_size, top_k)
+     print(f"Across {resample_count} resamples of size {sample_size}, 95% of the computed 'r' values lie between range ({r_ci_lower_bound:.3f}, {r_ci_upper_bound:.3f})\nThe original computed value of 'r' on {sample_size:.3f} samples was {r}")
+     print(f"Across {resample_count} resamples of size {sample_size}, 95% of the computed 'p' values lie between range ({p_ci_lower_bound:.3f}, {p_ci_upper_bound:.3f})\nThe original computed value of 'r' on {sample_size:.3f} samples was {p}")
      
 if __name__ == "__main__":
      main()
