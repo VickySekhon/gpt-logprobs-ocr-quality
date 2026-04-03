@@ -15,6 +15,9 @@ TOKEN_PRINT_LIMIT = 3
 EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "\n\n" "latex", "json", "tag", "\\"}
 CACHE_PATH = "cache/cache.json"
 
+YOUDEN_J = "Youden J"
+MIN_ERROR = "Min Error"
+
 def init_openai_client():
      load_dotenv()
      
