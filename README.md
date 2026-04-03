@@ -72,3 +72,17 @@ CER:
 
 OUTLIER:
 * GPT-4 failure mode called repetition loop causing the 8.1 CER anomaly
+
+AUC (area under curve)
+- if given random positive and negative example, model will rank the positive example with higher probability
+- 1.0 is perfect, 0.8 is good, anything below is worse
+ROC Curve
+- plot of true positives and false negatives
+- also computes a list of thresholds which are just the same as your p_hat values sorted. The trick is to find the best threshold that maximizes either fpr or tpr
+Youden's J
+- finds the best value of threshold (max of tpr - fpr)
+- maximize the tpr
+Sensitivity
+- correctly identify true positives while minimizing false negatives
+Specificity
+- ability to correctly identify true negatives while minimizing false positives
