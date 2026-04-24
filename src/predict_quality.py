@@ -31,7 +31,7 @@ def predict_subset(top_k, max_pages, output):
     page_total = len(page_ids)
 
     # Get random sample
-    np.random.shuffle(page_ids)
+    #np.random.shuffle(page_ids)
 
     data, i = [], 0
     for page_id in page_ids:
@@ -86,7 +86,7 @@ def predict_subset(top_k, max_pages, output):
         i += 1
 
     df = pd.DataFrame(data)
-    df.to_csv(f"{output}/results_k_{top_k}.csv")
+    df.to_csv(f"{output}/csv/results_k_{top_k}.csv")
     return df
 
 
@@ -145,7 +145,7 @@ def main(indicator):
     args = parser.parse_args()
     top_k = args.top_k or 10
     max_pages = args.max_pages or 100
-    output = args.output or "csvs"
+    output = args.output or "results"
 
     print(f"Using **{indicator}** as an indicator of CER")
     df = predict_subset(top_k, max_pages, output)
