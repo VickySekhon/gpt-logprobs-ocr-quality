@@ -85,7 +85,7 @@ def transcribe_with_logprobs(image_path, top_k=5, model=MODEL, prompt_version=1)
     cache[cache_key] = {"transcript": transcript_text, "token_logprobs": token_logprobs}
     successful = write_cache_json(cache)
     if not successful:
-        print(f"Transcribed file {page_id} was not written to cache.")
+        print(f"Transcribed file {page_id} was not written to cache")
 
     return transcript_text, token_logprobs
 
