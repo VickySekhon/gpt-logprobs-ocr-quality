@@ -3,7 +3,7 @@ PIP = pip
 
 TOP_K = 10
 MAX_PAGES = 100
-OUTPUT = csvs
+OUTPUT = results
 
 .PHONY: install run-all figs clean
 
@@ -14,9 +14,10 @@ run-all:
 	$(PYTHON) src/predict_quality.py --top-k $(TOP_K) --max-pages $(MAX_PAGES) --output $(OUTPUT)
 
 figs:
-	$(PYTHON) src/figures/entropy_vs_cer.py --top-k $(TOP_K)
-	$(PYTHON) src/figures/roc_thresholds.py --top-k $(TOP_K)
-	$(PYTHON) src/figures/stratified_analysis.py --top-k $(TOP_K)
+	$(PYTHON) scripts/entropy_vs_cer.py --top-k $(TOP_K)
+	$(PYTHON) scripts/roc_thresholds.py --top-k $(TOP_K)
+	$(PYTHON) scripts/stratified_analysis.py --top-k $(TOP_K)
 
 clean:
-	rm -rf figures/*.png csvs/*.csv
+	rm -rf $(OUTPUT)/figures/*.png 
+	rm -rf $(OUTPUT)/csv/*.csv
