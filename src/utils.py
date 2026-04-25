@@ -13,11 +13,19 @@ from loader import load_text_pair
 
 MODEL = "gpt-4o"
 # Safe defaults, otherwise these are read from input
-TOP_K = 5
+TOP_K = 10
+MAX_PAGES = 100
+THREADS = 20
+
+NORMALIZATION_TYPE = "all"
+
+OUTPUT_DIRECTORY = "results"
+
 WINDOW_SIZE = 5
 TOP_M = 10
 TOKEN_PRINT_LIMIT = 3
 EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "\n\n" "latex", "json", "tag", "\\"}
+
 CACHE_PATH = "cache/cache.json"
 
 YOUDEN_J = "Youden J"
@@ -37,6 +45,10 @@ def init_openai_client():
 def encode_image(path: str) -> str:
     with open(path, "rb") as fh:
         return base64.b64encode(fh.read()).decode("utf-8")
+
+
+def flatten_array(array):
+    return [j for i in array for j in i]
 
 
 def pretty(alts):
@@ -109,6 +121,20 @@ def write_cache_json(mutated_obj) -> bool:
         print(f"Error writing to cache: {e}")
         return False
     return True
+
+
+def get_thread_start_and_end(total_pages, available_threads, thread_rank):
+    pages_to_process = total_pages // available_threads
+
+    if thread_rank < (total_pages % available_threads):
+        pages_to_process += 1
+
+    start_index = thread_rank * (total_pages // available_threads) + min(
+        thread_rank, total_pages % available_threads
+    )
+    end_index = start_index + pages_to_process
+
+    return start_index, end_index
 
 
 def get_token_logprobs(choice, top_k):
