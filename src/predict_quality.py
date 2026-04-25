@@ -2,6 +2,8 @@
 Runs the entire pipeline from start to finish, generating a single CSV file.
 """
 
+import threading
+
 import os, argparse
 import numpy as np
 import pandas as pd
@@ -18,27 +20,55 @@ from utils import (
     write_anomalies,
     compute_pearson,
     compute_spearman,
+    flatten_array,
+    get_thread_start_and_end,
 )
+from utils import TOP_K, MAX_PAGES, THREADS, NORMALIZATION_TYPE, OUTPUT_DIRECTORY
 
-NORMALIZATION_TYPE = "all"
+anomaly_lock = threading.Lock()
 
 
-def predict_subset(top_k, max_pages, output):
+def orchestrate_threads(top_k, max_pages, output, available_threads):
     image_folder = os.path.join(os.getcwd(), "data/images")
     page_ids = np.array(
         [get_page_id_from_image(image) for image in os.listdir(image_folder)]
-    )
-    page_total = len(page_ids)
+    )[:max_pages]
 
     # Get random sample
-    #np.random.shuffle(page_ids)
+    # np.random.shuffle(page_ids)
 
-    data, i = [], 0
+    threads, thread_results = [], [None] * available_threads
+    n = len(page_ids)
+
+    for rank in range(available_threads):
+        start_index, end_index = get_thread_start_and_end(n, available_threads, rank)
+        thread = threading.Thread(
+            target=predict_subset,
+            args=(
+                top_k,
+                page_ids[start_index:end_index],
+                thread_results,
+                rank,
+            ),
+        )
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    data = flatten_array(thread_results)
+    df = pd.DataFrame(data)
+    df.to_csv(f"{output}/csv/results_k_{top_k}.csv")
+    return df
+
+
+def predict_subset(top_k, page_ids, thread_results, rank):
+    thread_id = threading.current_thread().name
+    data = []
     for page_id in page_ids:
-        if i == max_pages:
-            break
-
         image_path, ground_truth_text = load_text_pair(page_id)
+
         generated_transcript_text, token_logprobs = transcribe_with_logprobs(
             image_path, top_k
         )
@@ -59,11 +89,12 @@ def predict_subset(top_k, max_pages, output):
 
         if calculated_cer > 1:
             print(
-                f"Found an anomaly! OCR for {page_id} has a CER of {calculated_cer}. Skipping it and going directly to page: {i+2}"
+                f"*Found an anomaly* OCR for {page_id} has a CER of {calculated_cer}. Skipping it and going directly to the next page"
             )
-            write_anomalies(
-                page_id, generated_transcript_text_norm, ground_truth_text_norm
-            )
+            with anomaly_lock:
+                write_anomalies(
+                    page_id, generated_transcript_text_norm, ground_truth_text_norm
+                )
             continue
 
         calculated_levenshtein = levenshtein_distance(
@@ -82,12 +113,11 @@ def predict_subset(top_k, max_pages, output):
             "normalization_profile": NORMALIZATION_TYPE,
         }
         data.append(row)
-        print(f"Processed {i+1}/{page_total} pages (max = {max_pages})...")
-        i += 1
+        print(
+            f"{thread_id} | Processed excerpt with page id: {page_id} | Total excerpts to process: {len(page_ids)}"
+        )
 
-    df = pd.DataFrame(data)
-    df.to_csv(f"{output}/csv/results_k_{top_k}.csv")
-    return df
+    thread_results[rank] = data
 
 
 def visualize_correlation_coefficient(x, y, coefficient, top_k):
@@ -127,7 +157,7 @@ def compute_bootstrap_confidence_interval(
     return r_ci_lower_bound, r_ci_upper_bound, p_ci_lower_bound, p_ci_upper_bound
 
 
-def main(indicator):
+def main():
     parser = argparse.ArgumentParser(
         description=("Run prediction pipeline on entire BLN600 dataset")
     )
@@ -141,15 +171,24 @@ def main(indicator):
         "--max-pages", type=int, help="Maximum number of pages to process"
     )
     parser.add_argument("--output", type=str, help="Path (folder) to store output")
+    parser.add_argument(
+        "--threads",
+        type=int,
+        help="Number of threads to spawn when processing the dataset",
+    )
 
     args = parser.parse_args()
-    top_k = args.top_k or 10
-    max_pages = args.max_pages or 100
-    output = args.output or "results"
+    top_k = args.top_k or TOP_K
+    max_pages = args.max_pages or MAX_PAGES
+    output = args.output or OUTPUT_DIRECTORY
+    available_threads = args.threads or THREADS
 
-    print(f"Using **{indicator}** as an indicator of CER")
-    df = predict_subset(top_k, max_pages, output)
+    try:
+        orchestrate_threads(top_k, max_pages, output, available_threads)
+        print("Execution successful")
+    except Exception as e:
+        raise e
 
 
 if __name__ == "__main__":
-    main("avg_bits_per_token")
+    main()
