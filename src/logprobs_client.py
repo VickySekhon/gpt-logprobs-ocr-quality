@@ -5,6 +5,7 @@ Converts a page excerpt to plain text file and caches it.
 import threading
 
 from scan2latex_entropy import encode_image, chat
+from loader import load_image
 from utils import (
     init_openai_client,
     get_page_id_from_path,
@@ -13,9 +14,8 @@ from utils import (
     get_token_logprobs,
     write_cache_json,
 )
-from loader import load_image
-
 from utils import MODEL
+
 
 client = init_openai_client()
 
