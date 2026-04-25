@@ -3,6 +3,7 @@ PIP = pip
 
 TOP_K = 10
 MAX_PAGES = 100
+THREADS = 20
 OUTPUT = results
 
 .PHONY: install run-all figs clean
@@ -11,7 +12,7 @@ install:
 	$(PIP) install -r requirements.txt
 
 run-all:
-	$(PYTHON) src/predict_quality.py --top-k $(TOP_K) --max-pages $(MAX_PAGES) --output $(OUTPUT)
+	$(PYTHON) src/predict_quality.py --top-k $(TOP_K) --max-pages $(MAX_PAGES) --output $(OUTPUT) --threads $(THREADS)
 
 figs:
 	$(PYTHON) scripts/entropy_vs_cer.py --top-k $(TOP_K)
@@ -21,3 +22,4 @@ figs:
 clean:
 	rm -rf $(OUTPUT)/figures/*.png 
 	rm -rf $(OUTPUT)/csv/*.csv
+	rm -rf $(OUTPUT)/tables/*.png
