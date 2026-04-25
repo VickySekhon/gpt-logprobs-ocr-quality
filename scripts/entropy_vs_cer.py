@@ -8,6 +8,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from utils import TOP_K, OUTPUT_DIRECTORY
+
 
 def visualize_cer(df, top_k, output, indicator="avg_bits_per_token"):
     x, y = df[f"{indicator}"], df["cer"]
@@ -56,8 +58,8 @@ def main():
     parser.add_argument("--output", type=str, help="Path (folder) to store output")
 
     args = parser.parse_args()
-    top_k = args.top_k or 10
-    output = args.output or "results"
+    top_k = args.top_k or TOP_K
+    output = args.output or OUTPUT_DIRECTORY
 
     path_to_csv = Path(f"{output}/csv/results_k_{top_k}.csv")
 

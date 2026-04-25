@@ -2,9 +2,7 @@
 Runs the entire pipeline from start to finish, generating a single CSV file.
 """
 
-import threading
-
-import os, argparse
+import threading, os, argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
