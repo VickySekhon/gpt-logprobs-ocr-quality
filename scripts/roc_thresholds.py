@@ -3,6 +3,7 @@ Generates a plot of ROC curves for regression results based on a specified top-k
 """
 
 import argparse
+import pandas as pd
 from pathlib import Path
 
 from regression import main
@@ -30,7 +31,8 @@ def _main():
     ), f"{path_to_csv} does not exist, please run `make run-all` first to generate the results csv file."
 
     try:
-        main(top_k, output)
+        df = pd.read_csv(path_to_csv)
+        main(df, output)
         print("Execution successful")
     except Exception as e:
         raise e

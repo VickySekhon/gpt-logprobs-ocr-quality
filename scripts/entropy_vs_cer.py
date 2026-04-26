@@ -8,41 +8,44 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from utils import save_figures
+
 from utils import TOP_K, OUTPUT_DIRECTORY
 
 
-def visualize_cer(df, top_k, output, indicator="avg_bits_per_token"):
+def visualize_cer(df, output, indicator="avg_bits_per_token"):
     x, y = df[f"{indicator}"], df["cer"]
 
     if indicator == "avg_surprisal_per_token":
-        indicator = "Surprisal"
+        indicator = "Average Token Surprisal (Bits/Token)"
     else:
-        indicator = "Entropy"
+        indicator = "Average Token Entropy (Bits/Token)"
 
     plt.figure(figsize=(10, 6))
     ax = sns.regplot(x=x, y=y, ci=None, line_kws={"color": "red"})
 
     params = {
         "xlabel": f"{indicator}",
-        "ylabel": "CER",
-        "title": f"The Relationship Between {indicator} and CER For K = {top_k}",
+        "ylabel": "Character Error Rate (CER)",
+        # Remove '(Bits/Token)' from crowding the title
+        "title": f"Relationship Between {" ".join(indicator.split()[:3])} and Character Error Rate",
     }
-
     ax.set(**params)
-    plt.savefig(f"{output}/figures/{indicator.lower()}_vs_cer_k_{top_k}.png", dpi=200)
+    indicator_name = indicator.split()[2].lower()
+    save_figures(plt.gcf(), f"{output}/figures/figure_01_{indicator_name}_vs_cer")
 
 
-def visualize_entropy_distribution(df, top_k, output):
+def visualize_entropy_distribution(df, output):
     data = df["avg_bits_per_token"]
 
     plt.figure(figsize=(10, 6))
     plt.hist(data, bins=len(df))
 
-    plt.xlabel("Entropy (Average Bits Per Token)")
-    plt.ylabel("Frequency of Entropy Level")
-    plt.title(f"Distribution of Entropy Across Data (K = {top_k})")
+    plt.xlabel("Average Token Entropy (Bits/Token)")
+    plt.ylabel("Frequency")
+    plt.title(f"Distribution of Average Token Entropy Across Data")
 
-    plt.savefig(f"{output}/figures/entropy_distribution_k_{top_k}.png", dpi=200)
+    save_figures(plt.gcf(), f"{output}/figures/figure_02_entropy_distribution")
 
 
 def main():
@@ -69,8 +72,8 @@ def main():
 
     try:
         df = pd.read_csv(path_to_csv)
-        visualize_cer(df, top_k, output)
-        visualize_entropy_distribution(df, top_k, output)
+        visualize_cer(df, output)
+        visualize_entropy_distribution(df, output)
         print("Execution successful")
     except Exception as e:
         raise e
