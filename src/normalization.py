@@ -28,8 +28,6 @@ def normalize_quotes_and_dashes(text: str) -> str:
     text = text.replace("---", "-").replace("—", "-").replace("–", "-")
     # dashes: normalize em/en/triple-hyphen to a single hyphen
 
-
-
     return text
 
 
