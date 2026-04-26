@@ -9,8 +9,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import compute_pearson, compute_spearman
 from regression import get_misclassified_triage_decisions
+from utils import compute_pearson, compute_spearman, save_figures
 
 from utils import YOUDEN_J, TOP_K, OUTPUT_DIRECTORY
 
@@ -22,7 +22,7 @@ def stratify_df(df: pd.DataFrame, quartiles=4):
     return df
 
 
-def plot_stratified_correlations(stratified_df, top_k, output):
+def visualize_entropy_cer_correlation_across_page_lengths(stratified_df, output):
     quartiles, pearsons, spearmans, group_sizes = compute_stratified_correlations(
         stratified_df
     )
@@ -37,15 +37,14 @@ def plot_stratified_correlations(stratified_df, top_k, output):
 
     ax.set_xticks(x)
     ax.set_xticklabels([f"{q}\n(n={n})" for q, n in zip(quartiles, group_sizes)])
-    ax.set_xlabel("Ground Truth Length Quartile")
-    ax.set_ylabel("Correlation with CER")
-    ax.set_title(f"Pearson vs Spearman by Length Quartile, k={top_k}")
+    ax.set_xlabel("Ground-Truth Length (Characters) Quartile")
+    ax.set_ylabel("Correlation")
+    
+    ax.set_title(f"Correlation Between Average Token Entropy and Character Error Rate")
     ax.legend()
 
     fig.tight_layout()
-    fig.savefig(f"{output}/figures/stratified_correlations_k_{top_k}.png", dpi=200)
-
-    plt.close(fig)
+    save_figures(fig, f"{output}/figures/figure_05_stratified_correlations")
 
 
 def compute_stratified_correlations(
@@ -64,8 +63,8 @@ def compute_stratified_correlations(
     return quartiles, pearsons, spearmans, group_sizes
 
 
-def visualize_entropy_and_cer_across_page_lengths(
-    stratified_df: pd.DataFrame, top_k, output
+def visualize_entropy_vs_cer_across_page_lengths(
+    stratified_df: pd.DataFrame, output
 ):
     fig, axes = plt.subplots(2, 2, figsize=(10, 6))
 
@@ -73,21 +72,27 @@ def visualize_entropy_and_cer_across_page_lengths(
         axes.flatten(), stratified_df.groupby("length_quartile")
     ):
         ax.scatter(group["avg_bits_per_token"], group["cer"])
+        
+        if quartile == "Q1":
+            quartile = "Q1 (Shortest)"
+        elif quartile == "Q4":
+            quartile = "Q4 (Longest)"
+            
         ax.set_title(f"{quartile} n={len(group)}")
-        ax.set_xlabel("Entropy (Average Bits Per Token)")
-        ax.set_ylabel("CER")
+        ax.set_xlabel("Average Token Entropy (Bits/Token)")
+        ax.set_ylabel("Character Error Rate (CER)")
 
-    fig.tight_layout(pad=2.0)
 
-    plt.suptitle("The Relationship Between CER and Entropy Across Different Lengths")
-    plt.savefig(f"{output}/figures/entropy_vs_cer_stratified_k_{top_k}.png", dpi=200)
+    plt.suptitle("Character Error Rate vs. Average Token Entropy by Page Length Quartile")
+    fig.tight_layout(pad=1.2)
+    save_figures(plt.gcf(), f"{output}/figures/figure_04_entropy_vs_cer_stratified")
 
 
 def visualize_entropy_vs_surprisal_as_predictor(
-    df: pd.DataFrame, top_k, output, threshold_type, use_primary=False
+    df: pd.DataFrame, output, threshold_type, use_primary=False
 ):
     correct, val_indices = get_misclassified_triage_decisions(
-        top_k, output, use_primary, threshold_type
+        df, use_primary, threshold_type
     )
 
     # Validation set is 20% of entire dataframe
@@ -111,10 +116,11 @@ def visualize_entropy_vs_surprisal_as_predictor(
     )
     
     plt.legend()
-    plt.xlabel("Surprisal (Average)")
-    plt.ylabel("Entropy (Average Bits Per Token)")
-    plt.title("The Correlation Between Entropy and Surprisal")
-    plt.savefig(f"{output}/figures/surprisal_vs_entropy_k_{top_k}.png", dpi=200)
+    plt.xlabel("Average Token Surprisal (Bits/Token)")
+    plt.ylabel("Average Token Entropy (Bits/Token)")
+    plt.title("Correlation Between Average Token Entropy and Average Token Surprisal")
+    
+    save_figures(plt.gcf(), f"{output}/figures/figure_03_surprisal_vs_entropy")
 
 
 def main():
@@ -142,9 +148,9 @@ def main():
     try:
         df = pd.read_csv(path_to_csv)
         stratified_df = stratify_df(df)
-        plot_stratified_correlations(stratified_df, top_k, output)
-        visualize_entropy_and_cer_across_page_lengths(stratified_df, top_k, output)
-        visualize_entropy_vs_surprisal_as_predictor(df, top_k, output, YOUDEN_J)
+        visualize_entropy_vs_surprisal_as_predictor(df, output, YOUDEN_J)
+        visualize_entropy_vs_cer_across_page_lengths(stratified_df, output)
+        visualize_entropy_cer_correlation_across_page_lengths(stratified_df, output)
         print("Execution successful")
     except Exception as e:
         raise e

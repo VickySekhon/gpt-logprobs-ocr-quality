@@ -8,11 +8,21 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from PIL import Image
 import scipy.stats as stats
+from matplotlib.figure import Figure
 
 from loader import load_text_pair
 
 MODEL = "gpt-4o"
-# Safe defaults, otherwise these are read from input
+
+TOKEN_PRINT_LIMIT = 3
+EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "\n\n" "latex", "json", "tag", "\\"}
+
+CACHE_PATH = "cache/cache.json"
+
+YOUDEN_J = "Youden J"
+MIN_ERROR = "Min Error"
+
+# Safe defaults, otherwise the constants below are read from input
 TOP_K = 10
 MAX_PAGES = 100
 THREADS = 20
@@ -23,13 +33,6 @@ OUTPUT_DIRECTORY = "results"
 
 WINDOW_SIZE = 5
 TOP_M = 10
-TOKEN_PRINT_LIMIT = 3
-EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "\n\n" "latex", "json", "tag", "\\"}
-
-CACHE_PATH = "cache/cache.json"
-
-YOUDEN_J = "Youden J"
-MIN_ERROR = "Min Error"
 
 
 def init_openai_client():
@@ -221,6 +224,11 @@ def convert_tif_to_jpg(file_path):
             file_path.unlink()
     except OSError as e:
         print(f"Error converting {file_path}: {e}")
+
+
+def save_figures(figure: Figure, title, dpi=200):
+    figure.savefig(title + ".svg", dpi=dpi)
+    figure.savefig(title + ".png", dpi=dpi)
 
 
 def make_full_latex(latex_output: str) -> str:
