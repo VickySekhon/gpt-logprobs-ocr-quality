@@ -21,6 +21,7 @@ client = init_openai_client()
 
 cache_lock = threading.Lock()
 
+
 def transcribe_with_logprobs(image_path, top_k=5, model=MODEL, prompt_version=1):
     page_id = get_page_id_from_path(image_path)
     cache_key = get_cache_key(page_id, model, top_k, prompt_version)
@@ -86,12 +87,15 @@ def transcribe_with_logprobs(image_path, top_k=5, model=MODEL, prompt_version=1)
 
     with cache_lock:
         cache = load_cache_json()
-        
+
         value = cache.get(cache_key)
         if value:
             return value["transcript"], value["token_logprobs"]
-        
-        cache[cache_key] = {"transcript": transcript_text, "token_logprobs": token_logprobs}
+
+        cache[cache_key] = {
+            "transcript": transcript_text,
+            "token_logprobs": token_logprobs,
+        }
         successful = write_cache_json(cache)
         if not successful:
             print(f"Transcribed file {page_id} was not written to cache")

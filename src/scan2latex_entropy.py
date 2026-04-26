@@ -22,6 +22,7 @@ from utils import (
     get_probability,
 )
 
+
 class TeeOutput:
     """Captures all print output while also displaying to console."""
 
@@ -38,6 +39,8 @@ class TeeOutput:
 
     def get_log(self):
         return self.buffer.getvalue()
+
+
 def chat(
     msgs,
     client,
@@ -71,6 +74,7 @@ def chat(
             print(f"Error: {e} – retrying in 5 seconds ({attempt + 1}/{retries})")
             time.sleep(5)
     raise RuntimeError("Max retries exceeded for chat function.")
+
 
 def calculate_entropy(tok_infos, N, top_k):
     total_H = 0.0
@@ -106,6 +110,7 @@ def calculate_entropy(tok_infos, N, top_k):
     avg_H = total_H / N
 
     return total_H, avg_H, pos_entropy
+
 
 def sliding_window(pos_entropy, N, W, top_m):
     # running window sum for O(N) computation
