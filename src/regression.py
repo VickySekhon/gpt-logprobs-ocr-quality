@@ -20,6 +20,7 @@ def assign_page_labels(df):
     return df
 
 
+# Answers the question: will this entropy level have a CER <= 1% or 2%?
 def train_logistic_regression_model(df, primary: bool = False, random_state=50):
     x = np.asarray(df["avg_bits_per_token"]).reshape(-1, 1)
 
@@ -38,17 +39,17 @@ def train_logistic_regression_model(df, primary: bool = False, random_state=50):
     except Exception as e:
         raise e
 
-    p_hat = clf.predict_proba(X_val)[:, 1]
-    return p_hat, Y_val, val_indices
+    P_val = clf.predict_proba(X_val)[:, 1]
+    return P_val, Y_val, val_indices
 
 
-def compute_auc(p_hat, true_class):
-    return roc_auc_score(true_class, p_hat)
+def compute_auc(true_class, predicted_class):
+    return roc_auc_score(true_class, predicted_class)
 
 
-def compute_roc_curve(p_hat, true_class):
-    false_positive_rate, true_positive_rate, threshold = roc_curve(true_class, p_hat)
-    return false_positive_rate, true_positive_rate, threshold
+def compute_roc_curve(true_class, predicted_class):
+    fpr, tpr, thresholds = roc_curve(true_class, predicted_class)
+    return fpr, tpr, thresholds
 
 
 def visualize_roc_curve(output, use_primary, fpr, tpr):
@@ -66,25 +67,25 @@ def visualize_roc_curve(output, use_primary, fpr, tpr):
     save_figures(plt.gcf(), f"{output}/figures/figure_06_roc_entropy")
 
 
-def compute_youden_j_threshold(thresholds, fpr, tpr):
+def use_youden_j_statistic(thresholds, fpr, tpr) -> float:
     j = tpr - fpr
     # Finds where j is maximized in thresholds
     youden_j_threshold = thresholds[np.argmax(j)]
     return youden_j_threshold
 
 
-def compute_min_error_threshold(thresholds, fpr, tpr, Y_val):
+def use_min_error_statistic(thresholds, fpr, tpr, Y_val) -> float:
     misclassification = 1 - (tpr * sum(Y_val) + (1 - fpr) * sum(1 - Y_val)) / len(Y_val)
     min_error_threshold = thresholds[np.argmin(misclassification[1:])]
     return min_error_threshold
 
 
-def compute_threshold(thresholds, fpr, tpr, Y_val, threshold_type):
-    if threshold_type == YOUDEN_J:
-        return compute_youden_j_threshold(thresholds, fpr, tpr)
+def compute_threshold(thresholds, fpr, tpr, Y_val, statistic):
+    if statistic == YOUDEN_J:
+        return use_youden_j_statistic(thresholds, fpr, tpr)
 
-    if threshold_type == MIN_ERROR:
-        return compute_min_error_threshold(thresholds, fpr, tpr, Y_val)
+    if statistic == MIN_ERROR:
+        return use_min_error_statistic(thresholds, fpr, tpr, Y_val)
 
 
 def compute_sensitivity(tp, fn):
@@ -98,11 +99,11 @@ def compute_specificity(tn, fp):
 def get_misclassified_triage_decisions(df, use_primary, threshold_type):
     df = assign_page_labels(df)
 
-    p_hat, Y_val, val_indices = train_logistic_regression_model(df, use_primary)
-    fpr, tpr, thresholds = compute_roc_curve(p_hat, Y_val)
+    P_val, Y_val, val_indices = train_logistic_regression_model(df, use_primary)
+    fpr, tpr, thresholds = compute_roc_curve(Y_val, P_val)
     threshold = compute_threshold(thresholds, fpr, tpr, Y_val, threshold_type)
 
-    Y_pred = p_hat >= threshold
+    Y_pred = P_val >= threshold
 
     return (Y_pred == Y_val), val_indices
 
@@ -137,24 +138,23 @@ def create_roc_table(output, use_primary, table_data, headers):
 def main(df, output, use_primary=False):
     df = assign_page_labels(df)
 
-    p_hat, Y_val, _ = train_logistic_regression_model(df, use_primary)
-
-    auc = compute_auc(p_hat, Y_val)
-    fpr, tpr, thresholds = compute_roc_curve(p_hat, Y_val)
+    P_val, Y_val, _ = train_logistic_regression_model(df, use_primary)
+    auc = compute_auc(Y_val, P_val)
+    fpr, tpr, thresholds = compute_roc_curve(Y_val, P_val)
     visualize_roc_curve(output, use_primary, fpr, tpr)
 
     table_data = []
-    threshold_types = [YOUDEN_J, MIN_ERROR]
-    for threshold_type in threshold_types:
-        threshold = compute_threshold(thresholds, fpr, tpr, Y_val, threshold_type)
+    threshold_statistics = [YOUDEN_J, MIN_ERROR]
+    for statistic in threshold_statistics:
+        threshold = compute_threshold(thresholds, fpr, tpr, Y_val, statistic)
 
-        Y_pred = p_hat >= threshold
+        Y_pred = P_val >= threshold
 
         tp, fp, fn, tn = confusion_matrix(Y_val, Y_pred).ravel()
 
         sensitivity = compute_sensitivity(tp, fn)
         specificity = compute_specificity(tn, fp)
-        table_data.append([threshold_type, threshold, sensitivity, specificity, auc])
+        table_data.append([statistic, round(threshold, 4), sensitivity, round(specificity, 4), round(auc, 4)])
 
     headers = ["Threshold Type", "Threshold", "Sensitivity", "Specificity", "AUROC"]
     create_roc_table(output, use_primary, table_data, headers)
