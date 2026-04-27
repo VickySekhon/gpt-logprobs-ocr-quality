@@ -31,7 +31,7 @@ def load_bln600_metadata():
         ocr_file_path = os.path.join(OCR_PATH, filename)
         gt_file_path = os.path.join(GT_PATH, filename)
 
-        with open(ocr_file_path, "r") as ocr, open(gt_file_path, "r") as gt:
+        with open(ocr_file_path, "r", encoding="utf-8") as ocr, open(gt_file_path, "r", encoding="utf-8") as gt:
             ocr_text, gt_text = ocr.read(), gt.read()
 
         data["page-id"].append(int(page_id))

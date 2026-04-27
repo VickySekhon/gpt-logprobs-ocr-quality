@@ -9,10 +9,10 @@ from pathlib import Path
 from datetime import datetime
 from openai import OpenAI
 
-from normalization import *
-from metrics import cer
-from utils import MODEL, TOKEN_PRINT_LIMIT, EXCLUDE_TOKENS
-from utils import (
+from .normalization import *
+from .metrics import cer
+from .utils import MODEL, TOKEN_PRINT_LIMIT, EXCLUDE_TOKENS
+from .utils import (
     pretty,
     get_page_id_from_path,
     load_ground_truth,

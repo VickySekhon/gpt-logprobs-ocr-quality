@@ -3,15 +3,16 @@ Trains a logistic regression model on entropy data to classify pages as good or 
 computes performance metrics including AUC, ROC curves, and evaluates thresholds using Youden's J or minimum error methods.
 """
 
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix
 
-from utils import save_figures
+from .utils import save_figures
 
-from utils import YOUDEN_J, MIN_ERROR
+from .utils import YOUDEN_J, MIN_ERROR
 
 
 def assign_page_labels(df):
@@ -151,7 +152,13 @@ def main(df, output, use_primary=False):
         Y_pred = P_val >= threshold
 
         tp, fp, fn, tn = confusion_matrix(Y_val, Y_pred).ravel()
-
+        
+        if (tp == 0 and fn == 0) or (tn == 0 and fp == 0):
+            print(
+                f"Encountered either no positive or negative class samples with statistic {statistic}. Skipping sensitivity and specificity calculation. {statistic} will not be included in the ROC table."
+            )
+            continue
+        
         sensitivity = compute_sensitivity(tp, fn)
         specificity = compute_specificity(tn, fp)
         table_data.append([statistic, round(threshold, 4), sensitivity, round(specificity, 4), round(auc, 4)])

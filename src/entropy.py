@@ -2,7 +2,7 @@
 Calculates per-token entropy and entropy for all tokens of an excerpt.
 """
 
-from utils import (
+from .utils import (
     calculate_shannon_entropy,
     calculate_surprisal,
     load_cache_json,
