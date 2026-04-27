@@ -8,7 +8,7 @@ endif
 
 TOP_K     = 10
 MAX_PAGES = 100
-THREADS   = 1
+THREADS   = 20
 OUTPUT    = results
 
 .PHONY: install run-all figs clean
