@@ -7,7 +7,8 @@ import pandas as pd
 from pathlib import Path
 
 from src.regression import main
-from utils import TOP_K, OUTPUT_DIRECTORY
+
+from src.utils import TOP_K, OUTPUT_DIRECTORY
 
 
 def _main():
