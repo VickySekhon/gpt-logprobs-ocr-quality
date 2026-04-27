@@ -11,10 +11,13 @@ MAX_PAGES = 100
 THREADS   = 20
 OUTPUT    = results
 
-.PHONY: install run-all figs clean
+.PHONY: install pre-process run-all figs clean
 
 install:
 	$(PIP) install -r requirements.txt
+
+preprocess:
+	$(PYTHON) -m src.preprocess_dataset
 
 run-all:
 	$(PYTHON) -m src.predict_quality --top-k $(TOP_K) --max-pages $(MAX_PAGES) --output $(OUTPUT) --threads $(THREADS)
