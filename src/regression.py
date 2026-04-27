@@ -3,7 +3,6 @@ Trains a logistic regression model on entropy data to classify pages as good or 
 computes performance metrics including AUC, ROC curves, and evaluates thresholds using Youden's J or minimum error methods.
 """
 
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
