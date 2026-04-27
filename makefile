@@ -1,8 +1,13 @@
-PYTHON = python3
-PIP = pip
+ifeq ($(OS),Windows_NT)
+    PYTHON = py -3
+    PIP    = py -3 -m pip
+else
+    PYTHON = python3
+    PIP    = python3 -m pip
+endif
 
 TOP_K = 10
-MAX_PAGES = 100
+MAX_PAGES = 20
 THREADS = 20
 OUTPUT = results
 
@@ -12,12 +17,12 @@ install:
 	$(PIP) install -r requirements.txt
 
 run-all:
-	$(PYTHON) src/predict_quality.py --top-k $(TOP_K) --max-pages $(MAX_PAGES) --output $(OUTPUT) --threads $(THREADS)
+	$(PYTHON) -m src.predict_quality --top-k $(TOP_K) --max-pages $(MAX_PAGES) --output $(OUTPUT) --threads $(THREADS)
 
 figs:
-	$(PYTHON) scripts/entropy_vs_cer.py --top-k $(TOP_K)
-	$(PYTHON) scripts/roc_thresholds.py --top-k $(TOP_K)
-	$(PYTHON) scripts/stratified_analysis.py --top-k $(TOP_K)
+	$(PYTHON) -m scripts.entropy_vs_cer --top-k $(TOP_K)
+	$(PYTHON) -m scripts.roc_thresholds --top-k $(TOP_K)
+	$(PYTHON) -m scripts.stratified_analysis --top-k $(TOP_K)
 
 clean:
 	rm -rf $(OUTPUT)/figures/*.png 

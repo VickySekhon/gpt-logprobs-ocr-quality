@@ -4,9 +4,9 @@ Shared pipeline of functions applied to OCR and GT to maintain fair and equal CE
 
 import re
 
-from utils import load_cache_json
-from loader import load_text_pair
-from metrics import cer
+from .utils import load_cache_json
+from .loader import load_text_pair
+from .metrics import cer
 
 
 def normalize_whitespace(text: str) -> str:
@@ -119,7 +119,7 @@ def main():
     _cer = cer(generated_text, ground_truth_text)
     compare = f"Generated:\n{generated_text}\n\nGround Truth:\n{ground_truth_text}\n\nCER:\n{_cer}"
 
-    with open("compare.txt", "w") as file:
+    with open("compare.txt", "w", encoding="utf-8") as file:
         file.write(compare)
     return
 

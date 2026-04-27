@@ -9,10 +9,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from regression import get_misclassified_triage_decisions
-from utils import compute_pearson, compute_spearman, save_figures
+from src.regression import get_misclassified_triage_decisions
+from src.utils import compute_pearson, compute_spearman, save_figures
 
-from utils import YOUDEN_J, TOP_K, OUTPUT_DIRECTORY
+from src.utils import YOUDEN_J, TOP_K, OUTPUT_DIRECTORY
 
 
 def stratify_df(df: pd.DataFrame, quartiles=4):
@@ -39,7 +39,7 @@ def visualize_entropy_cer_correlation_across_page_lengths(stratified_df, output)
     ax.set_xticklabels([f"{q}\n(n={n})" for q, n in zip(quartiles, group_sizes)])
     ax.set_xlabel("Ground-Truth Length (Characters) Quartile")
     ax.set_ylabel("Correlation")
-    
+
     ax.set_title(f"Correlation Between Average Token Entropy and Character Error Rate")
     ax.legend()
 
@@ -63,27 +63,26 @@ def compute_stratified_correlations(
     return quartiles, pearsons, spearmans, group_sizes
 
 
-def visualize_entropy_vs_cer_across_page_lengths(
-    stratified_df: pd.DataFrame, output
-):
+def visualize_entropy_vs_cer_across_page_lengths(stratified_df: pd.DataFrame, output):
     fig, axes = plt.subplots(2, 2, figsize=(10, 6))
 
     for ax, (quartile, group) in zip(
         axes.flatten(), stratified_df.groupby("length_quartile")
     ):
         ax.scatter(group["avg_bits_per_token"], group["cer"])
-        
+
         if quartile == "Q1":
             quartile = "Q1 (Shortest)"
         elif quartile == "Q4":
             quartile = "Q4 (Longest)"
-            
+
         ax.set_title(f"{quartile} n={len(group)}")
         ax.set_xlabel("Average Token Entropy (Bits/Token)")
         ax.set_ylabel("Character Error Rate (CER)")
 
-
-    plt.suptitle("Character Error Rate vs. Average Token Entropy by Page Length Quartile")
+    plt.suptitle(
+        "Character Error Rate vs. Average Token Entropy by Page Length Quartile"
+    )
     fig.tight_layout(pad=1.2)
     save_figures(plt.gcf(), f"{output}/figures/figure_04_entropy_vs_cer_stratified")
 
@@ -98,7 +97,7 @@ def visualize_entropy_vs_surprisal_as_predictor(
     # Validation set is 20% of entire dataframe
     val_df = df.loc[val_indices]
     plt.figure(figsize=(10, 6))
-    
+
     plt.scatter(
         val_df[correct]["avg_surprisal_per_token"],
         val_df[correct]["avg_bits_per_token"],
@@ -106,7 +105,7 @@ def visualize_entropy_vs_surprisal_as_predictor(
         label="Correct",
         alpha=0.6,
     )
-    
+
     plt.scatter(
         val_df[~correct]["avg_surprisal_per_token"],
         val_df[~correct]["avg_bits_per_token"],
@@ -114,12 +113,12 @@ def visualize_entropy_vs_surprisal_as_predictor(
         label="Misclassified",
         alpha=0.6,
     )
-    
+
     plt.legend()
     plt.xlabel("Average Token Surprisal (Bits/Token)")
     plt.ylabel("Average Token Entropy (Bits/Token)")
     plt.title("Correlation Between Average Token Entropy and Average Token Surprisal")
-    
+
     save_figures(plt.gcf(), f"{output}/figures/figure_03_surprisal_vs_entropy")
 
 
@@ -143,7 +142,7 @@ def main():
 
     assert (
         path_to_csv.exists()
-    ), f"{path_to_csv} does not exist, please run `make run-all` first to generate the results csv file."
+    ), f"{path_to_csv} does not exist, please run `make run-all` to generate the results csv file before generating figures."
 
     try:
         df = pd.read_csv(path_to_csv)
