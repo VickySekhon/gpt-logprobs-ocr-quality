@@ -15,7 +15,7 @@ from .loader import load_text_pair
 MODEL = "gpt-4o"
 
 TOKEN_PRINT_LIMIT = 3
-EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "\n\n" "latex", "json", "tag", "\\"}
+EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "\n\n", "latex", "json", "tag", "\\"}
 
 CACHE_PATH = "cache/cache.json"
 
@@ -46,7 +46,7 @@ def init_openai_client():
 
 
 def encode_image(path: str) -> str:
-    with open(path, "rb", encoding="utf-8") as fh:
+    with open(path, "rb") as fh:
         return base64.b64encode(fh.read()).decode("utf-8")
 
 

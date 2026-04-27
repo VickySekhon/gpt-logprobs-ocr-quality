@@ -1,9 +1,8 @@
 """
 Trains a logistic regression model on entropy data to classify pages as good or bad based on CER thresholds,
-computes performance metrics including AUC, ROC curves, and evaluates thresholds using Youden's J or minimum error methods.
+computes performance metrics including AUC, ROC curves, and evaluates thresholds using Youden's J or Minimum Error statistics.
 """
 
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
@@ -152,16 +151,24 @@ def main(df, output, use_primary=False):
         Y_pred = P_val >= threshold
 
         tp, fp, fn, tn = confusion_matrix(Y_val, Y_pred).ravel()
-        
+
         if (tp == 0 and fn == 0) or (tn == 0 and fp == 0):
             print(
                 f"Encountered either no positive or negative class samples with statistic {statistic}. Skipping sensitivity and specificity calculation. {statistic} will not be included in the ROC table."
             )
             continue
-        
+
         sensitivity = compute_sensitivity(tp, fn)
         specificity = compute_specificity(tn, fp)
-        table_data.append([statistic, round(threshold, 4), sensitivity, round(specificity, 4), round(auc, 4)])
+        table_data.append(
+            [
+                statistic,
+                f"{round(threshold, 4):.4f}",
+                f"{round(sensitivity, 4):.4f}",
+                f"{round(specificity, 4):.4f}",
+                f"{round(auc, 4):.4f}",
+            ]
+        )
 
     headers = ["Threshold Type", "Threshold", "Sensitivity", "Specificity", "AUROC"]
     create_roc_table(output, use_primary, table_data, headers)

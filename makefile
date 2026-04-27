@@ -7,7 +7,7 @@ else
 endif
 
 TOP_K = 10
-MAX_PAGES = 20
+MAX_PAGES = 100
 THREADS = 20
 OUTPUT = results
 

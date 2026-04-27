@@ -8,9 +8,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils import save_figures
+from src.utils import save_figures
 
-from utils import TOP_K, OUTPUT_DIRECTORY
+from src.utils import TOP_K, OUTPUT_DIRECTORY
 
 
 def visualize_cer(df, output, indicator="avg_bits_per_token"):
@@ -28,7 +28,7 @@ def visualize_cer(df, output, indicator="avg_bits_per_token"):
         "xlabel": f"{indicator}",
         "ylabel": "Character Error Rate (CER)",
         # Remove '(Bits/Token)' from crowding the title
-        "title": f"Relationship Between {" ".join(indicator.split()[:3])} and Character Error Rate",
+        "title": f"Relationship Between {' '.join(indicator.split()[:3])} and Character Error Rate",
     }
     ax.set(**params)
     indicator_name = indicator.split()[2].lower()
