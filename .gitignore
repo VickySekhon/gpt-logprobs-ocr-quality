@@ -8,6 +8,9 @@ data/ground-truth/
 data/images/
 data/ocr-text/
 
+# JSON cache
+cache/cache.json
+
 # Byte-compiled / optimized / DLL files
 **/__pycache__
 *.py[codz]
