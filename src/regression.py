@@ -148,12 +148,13 @@ def main(top_k, output, use_primary=False):
         threshold = compute_threshold(thresholds, fpr, tpr, Y_val, threshold_type)
         Y_pred = p_hat >= threshold
         tp, fp, fn, tn = confusion_matrix(Y_val, Y_pred).ravel()
-        # print("VICKY", Y_pred, Y_val, threshold_type)
+        
         if (tp == 0 and fn == 0) or (tn == 0 and fp == 0):
             print(
                 f"Encountered either no positive or negative class samples with statistic {threshold_type}. Skipping sensitivity and specificity calculation. {threshold_type} will not be included in the ROC table."
             )
             continue
+        
         sensitivity = compute_sensitivity(tp, fn)
         specificity = compute_specificity(tn, fp)
         table_data.append([threshold_type, threshold, sensitivity, specificity, auc])
