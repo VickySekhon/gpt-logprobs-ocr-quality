@@ -1,15 +1,15 @@
 ifeq ($(OS),Windows_NT)
-    PYTHON = py -3
-    PIP    = py -3 -m pip
+    PYTHON = venv\Scripts\python
+    PIP    = venv\Scripts\pip
 else
-    PYTHON = python3
-    PIP    = python3 -m pip
+    PYTHON = venv/bin/python
+    PIP    = venv/bin/pip
 endif
 
-TOP_K = 10
+TOP_K     = 10
 MAX_PAGES = 100
-THREADS = 20
-OUTPUT = results
+THREADS   = 1
+OUTPUT    = results
 
 .PHONY: install run-all figs clean
 
