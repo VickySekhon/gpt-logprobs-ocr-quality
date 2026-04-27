@@ -15,7 +15,7 @@ from .loader import load_text_pair
 MODEL = "gpt-4o"
 
 TOKEN_PRINT_LIMIT = 3
-EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "\n\n" "latex", "json", "tag", "\\"}
+EXCLUDE_TOKENS = {"```", "python", "", " ", "\n", "\n\n", "latex", "json", "tag", "\\"}
 
 CACHE_PATH = "cache/cache.json"
 
