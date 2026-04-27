@@ -46,7 +46,7 @@ def init_openai_client():
 
 
 def encode_image(path: str) -> str:
-    with open(path, "rb", encoding="utf-8") as fh:
+    with open(path, "rb") as fh:
         return base64.b64encode(fh.read()).decode("utf-8")
 
 

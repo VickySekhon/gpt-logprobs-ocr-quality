@@ -8,9 +8,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils import save_figures
+from src.utils import save_figures
 
-from utils import TOP_K, OUTPUT_DIRECTORY
+from src.utils import TOP_K, OUTPUT_DIRECTORY
 
 
 def visualize_cer(df, output, indicator="avg_bits_per_token"):
