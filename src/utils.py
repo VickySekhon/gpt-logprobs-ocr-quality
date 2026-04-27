@@ -104,11 +104,18 @@ def load_cache_json() -> dict:
     current_path = os.getcwd()
     cache_file = os.path.join(current_path, CACHE_PATH)
 
+    if not os.path.exists(cache_file):
+        print("Creating cache")
+        with open(cache_file, "w", encoding="utf-8") as file:
+            json.dump({}, file)
+        return {}
+
     try:
         with open(cache_file, "r", encoding="utf-8") as file:
             cache = json.load(file)
+    # Safety net against manual file edits or corrupted writes
     except json.JSONDecodeError:
-        print("Cache is empty, returning empty dictionary instead")
+        print("Cache error: invalid JSON. Returning empty dictionary instead")
         return {}
     return cache
 
@@ -201,17 +208,17 @@ def convert_all_tif_to_jpg():
     new_filecount = len(os.listdir(image_folder))
     if original_filecount != new_filecount:
         print(
-            f"Some images were not correctly converted resulting in loss (filecount before: {original_filecount}, filecount after: {new_filecount})"
+            f"Warning: some images were not correctly converted resulting in loss (filecount before: {original_filecount}, filecount after: {new_filecount})"
         )
         return
-
-    print(f"Successfully converted")
 
 
 def convert_tif_to_jpg(file_path):
     file_path = Path(file_path)
     if file_path.suffix.lower() != ".tif":
-        print("Input file is not of .tif format. Did not convert it to JPG.")
+        print(
+            "Warning: input file is not of .tif format. Did not convert it to JPG. You do not need to do anything."
+        )
         return
     try:
         with Image.open(file_path) as file:
