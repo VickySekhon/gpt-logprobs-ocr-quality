@@ -2,15 +2,15 @@
 Trains a logistic regression model on entropy data to classify pages as good or bad based on CER thresholds,
 computes performance metrics including AUC, ROC curves, and evaluates thresholds using Youden's J or minimum error methods.
 """
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from tabulate import tabulate
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix
 
-from utils import YOUDEN_J, MIN_ERROR
+from .utils import YOUDEN_J, MIN_ERROR
 
 
 def add_labels(top_k, output):
@@ -22,7 +22,7 @@ def add_labels(top_k, output):
 
 def train_logistic_regression_model(df, primary: bool = False, random_state=50):
     x = np.asarray(df["avg_bits_per_token"]).reshape(-1, 1)
-    
+
     if primary:
         y = np.asarray(df["good_page_primary"])
     else:
@@ -54,15 +54,15 @@ def compute_roc_curve(p_hat, true_class):
 def plot_roc_curve(top_k, output, use_primary, fpr, tpr):
     plt.figure(figsize=(10, 6))
     plt.plot(fpr, tpr, marker="o", markersize=3, alpha=0.5)
-    
+
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    
+
     if use_primary:
         plt.title(f"The ROC Curve for a 1% CER Threshold")
     else:
         plt.title(f"The ROC Curve for a 2% CER Threshold")
-    
+
     plt.savefig(f"{output}/figures/roc_entropy_k_{top_k}.png", dpi=200)
 
 
@@ -97,18 +97,19 @@ def compute_specificity(tn, fp):
 
 def get_misclassified_triage_decisions(top_k, output, use_primary, threshold_type):
     df = add_labels(top_k, output)
-    
+
     p_hat, Y_val, val_indices = train_logistic_regression_model(df, use_primary)
     fpr, tpr, thresholds = compute_roc_curve(p_hat, Y_val)
     threshold = compute_threshold(thresholds, fpr, tpr, Y_val, threshold_type)
-    
+
     Y_pred = p_hat >= threshold
-    
+
     return (Y_pred == Y_val), val_indices
+
 
 def create_roc_table(top_k, output, use_primary, table_data, headers):
     fig, ax = plt.subplots(figsize=(10, 2.2))
-    
+
     tbl = ax.table(
         cellText=table_data,
         colLabels=headers,
@@ -116,7 +117,7 @@ def create_roc_table(top_k, output, use_primary, table_data, headers):
         colLoc="center",
         loc="center",
     )
-    
+
     if use_primary:
         title = "ROC Threshold Summary (CER ≤ 1%)"
     else:
@@ -125,10 +126,10 @@ def create_roc_table(top_k, output, use_primary, table_data, headers):
     tbl.auto_set_font_size(False)
     tbl.set_fontsize(10)
     tbl.scale(1, 1.4)
-    
+
     ax.set_title(title, pad=12)
     ax.axis("off")
-    
+
     fig.tight_layout()
     fig.savefig(f"{output}/tables/roc_table_k_{top_k}.png", dpi=200)
     plt.close(fig)
@@ -147,6 +148,12 @@ def main(top_k, output, use_primary=False):
         threshold = compute_threshold(thresholds, fpr, tpr, Y_val, threshold_type)
         Y_pred = p_hat >= threshold
         tp, fp, fn, tn = confusion_matrix(Y_val, Y_pred).ravel()
+        # print("VICKY", Y_pred, Y_val, threshold_type)
+        if (tp == 0 and fn == 0) or (tn == 0 and fp == 0):
+            print(
+                f"Encountered either no positive or negative class samples with statistic {threshold_type}. Skipping sensitivity and specificity calculation. {threshold_type} will not be included in the ROC table."
+            )
+            continue
         sensitivity = compute_sensitivity(tp, fn)
         specificity = compute_specificity(tn, fp)
         table_data.append([threshold_type, threshold, sensitivity, specificity, auc])

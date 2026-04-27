@@ -10,12 +10,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from loader import load_text_pair
-from logprobs_client import transcribe_with_logprobs
-from entropy import token_entropies_from_logprobs, surprisal_from_logprobs
-from metrics import cer, levenshtein_distance
-from normalization import normalize_text
-from utils import (
+from .loader import load_text_pair
+from .logprobs_client import transcribe_with_logprobs
+from .entropy import token_entropies_from_logprobs, surprisal_from_logprobs
+from .metrics import cer, levenshtein_distance
+from .normalization import normalize_text
+from .utils import (
     get_page_id_from_image,
     write_anomalies,
     compute_pearson,
@@ -23,7 +23,7 @@ from utils import (
     flatten_array,
     get_thread_start_and_end,
 )
-from utils import TOP_K, MAX_PAGES, THREADS, NORMALIZATION_TYPE, OUTPUT_DIRECTORY
+from .utils import TOP_K, MAX_PAGES, THREADS, NORMALIZATION_TYPE, OUTPUT_DIRECTORY
 
 anomaly_lock = threading.Lock()
 

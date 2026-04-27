@@ -9,10 +9,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import compute_pearson, compute_spearman
-from regression import get_misclassified_triage_decisions
+from src.utils import compute_pearson, compute_spearman
+from src.regression import get_misclassified_triage_decisions
 
-from utils import YOUDEN_J
+from src.utils import YOUDEN_J
 
 
 def stratify_df(df: pd.DataFrame, quartiles=4):
@@ -137,7 +137,7 @@ def main():
 
     assert (
         path_to_csv.exists()
-    ), f"{path_to_csv} does not exist, please run `make run-all` first to generate the results csv file."
+    ), f"{path_to_csv} does not exist, please run `make run-all` to generate the results csv file before generating figures."
 
     try:
         df = pd.read_csv(path_to_csv)

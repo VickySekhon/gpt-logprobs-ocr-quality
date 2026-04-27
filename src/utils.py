@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from PIL import Image
 import scipy.stats as stats
 
-from loader import load_text_pair
+from .loader import load_text_pair
 
 MODEL = "gpt-4o"
 # Safe defaults, otherwise these are read from input
@@ -43,7 +43,7 @@ def init_openai_client():
 
 
 def encode_image(path: str) -> str:
-    with open(path, "rb") as fh:
+    with open(path, "rb", encoding="utf-8") as fh:
         return base64.b64encode(fh.read()).decode("utf-8")
 
 
@@ -172,7 +172,7 @@ def get_token_logprobs(choice, top_k):
 
 def write_anomalies(page_id, ocr, ground_truth):
     dump = f"PAGE ID: {page_id}\nOCR:\n{ocr}\n\nGT:\n{ground_truth}"
-    with open("anomalies.txt", "a") as file:
+    with open("anomalies.txt", "a", encoding="utf-8") as file:
         file.write(dump)
         print(f"Wrote anomaly for: {page_id} to anomalies.txt")
 

@@ -5,7 +5,7 @@ Generates a plot of ROC curves for regression results based on a specified top-k
 import argparse
 from pathlib import Path
 
-from regression import main
+from src.regression import main
 
 
 def _main():
@@ -26,7 +26,7 @@ def _main():
     
     assert (
         path_to_csv.exists()
-    ), f"{path_to_csv} does not exist, please run `make run-all` first to generate the results csv file."
+    ), f"{path_to_csv} does not exist, please run `make run-all` to generate the results csv file before generating figures."
 
     try:
         main(top_k, output)
