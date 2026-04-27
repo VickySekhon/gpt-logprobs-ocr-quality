@@ -3,6 +3,11 @@ data/log-probs/
 data/logs/
 src/my_local_code/
 
+# BLN600 dataset artifacts
+data/ground-truth/
+data/images/
+data/ocr-text/
+
 # Byte-compiled / optimized / DLL files
 **/__pycache__
 *.py[codz]
