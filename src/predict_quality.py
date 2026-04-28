@@ -32,8 +32,8 @@ def orchestrate_threads(top_k, max_pages, output, available_threads):
         [get_page_id_from_image(image) for image in os.listdir(image_folder)]
     )[:max_pages]
 
-    # Get random sample
-    # np.random.shuffle(page_ids)
+    # Get a random sample
+    np.random.shuffle(page_ids)
 
     threads, thread_results = [], [None] * available_threads
     n = len(page_ids)
