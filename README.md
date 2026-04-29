@@ -44,8 +44,8 @@ This project uses a `makefile` as the main entry point. It provides commands to:
 
 ### Windows
 
-Windows does not natively include `make`. Install it explicitly.
-Chocolatey is a package manager that can be used to install `make`. Follow the Chocolatey installation steps and then run `choco install make`. Restart your terminal session afterward.
+Windows does not include `make` by default. Install it first.
+One option is Chocolatey, a package manager for Windows. Install Chocolatey, then run `choco install make`. Restart your terminal session afterward.
 
 Before beginning, create a virtual environment named `venv` using the command:
 

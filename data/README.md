@@ -2,7 +2,7 @@
 
 1) Navigate [here](https://orda.shef.ac.uk/articles/dataset/BLN600_A_Parallel_Corpus_of_Machine_Human_Transcribed_Nineteenth_Century_Newspaper_Texts/25439023)
 2) Find and click the button that says `Download all`
-3) Find the downloaded zip file on your machine and extract it by doing the following:
+3) Locate the downloaded ZIP file and extract it:
 
 ### Windows
 
@@ -12,13 +12,13 @@
 ### macOS/Linux
 
 1) Open a terminal in your Downloads folder (or provide the full path to the zip).
-2) Extract with password:
+2) Extract the archive:
 
 ```bash
 unzip BLN600.zip -d bln600
 ```
 
-3) Enter password `BLN600` when prompted.
+3) When prompted, enter password `BLN600`.
 
 ### Rename Folders
 
@@ -33,14 +33,14 @@ parent_dir/
      metadata.json
 ```
 
-The pipeline expects a separate naming convention. Please name folders manually by following the convention below:
+The pipeline expects a different naming convention. Rename the folders as follows:
 - `Ground Truth` -> `ground-truth`
 - `Images` -> `images`
 - `OCR Text` -> `ocr-text`
 
 ### Copy Folders to Project Directory
 
-Ensure you are at the root of the project directory then follow the commands below.
+From the project root, run the appropriate command below.
 
 #### Windows
 

@@ -7,9 +7,9 @@
 
 ## What was Implemented
 
-The entire OCR pipeline was implemented end to end. This includes loading the BLN600 dataset, performing OCR on images using GPT-4o to obtain a transcript and a logprobs object (cached for reuse), normalizing the OCR-generated and ground-truth transcripts to calculate the character error rate (CER) between the two texts, and computing the average token entropy (bits/token). These metrics, along with additional fields (see Figure 1), are stored in a Pandas DataFrame and exported as a CSV file in [results/csv](../results/csv).
+The OCR pipeline was implemented end to end. It loads the BLN600 dataset, performs OCR on images using GPT-4o to obtain a transcript plus a logprobs object (cached for reuse), normalizes the OCR-generated and ground-truth transcripts to compute character error rate (CER), and computes average token entropy (bits/token). These metrics, along with additional fields (see Figure 1), are stored in a Pandas DataFrame and exported to [results/csv](../results/csv).
 
-Once the CSV file is generated, the metrics are consumed by figure-generation scripts. [entropy_vs_cer.py](../scripts/entropy_vs_cer.py) plots the relationship between entropy and CER, the distribution of entropy, and surprisal versus entropy as an indicator of uncertainty. [stratified_analysis.py](../scripts/stratified_analysis.py) plots entropy versus CER stratified into four quartiles based on ground-truth length and computes correlations stratified into quartiles using Pearson and Spearman coefficients. Finally, [roc_thresholds.py](../scripts/roc_thresholds.py) trains a logistic regression model on entropy values to determine an entropy threshold that separates “good” pages (CER <= 2%) from “bad” pages (CER > 2%) using an ROC curve.
+Once the CSV is generated, figure scripts consume it. [entropy_vs_cer.py](../scripts/entropy_vs_cer.py) plots entropy versus CER, the entropy distribution, and surprisal versus entropy as an additional uncertainty indicator. [stratified_analysis.py](../scripts/stratified_analysis.py) stratifies pages into four quartiles by ground-truth length, plots entropy versus CER by quartile, and computes Pearson and Spearman correlations per quartile. Finally, [roc_thresholds.py](../scripts/roc_thresholds.py) trains a logistic regression model on entropy values and uses an ROC curve to choose an entropy threshold that separates “good” pages (CER <= 2%) from “bad” pages (CER > 2%).
 
 **Figure 1. Per-page record schema stored in the results CSV**
 | Field |
@@ -28,8 +28,8 @@ Once the CSV file is generated, the metrics are consumed by figure-generation sc
 
 - Entire OCR pipeline from start-to-finish
 - Robust figure generation
-- Centralized makefile execution point 
-- Comprehensive documentation outlining figures and their purposes, project structure, and commands for setting up and running the pipeline 
+- Centralized `makefile` entry point
+- Comprehensive documentation describing figures, project structure, and setup/run commands
 
 ## What is Incomplete
 
@@ -47,7 +47,7 @@ gpt-logprobs-ocr-quality/
      makefile
 ```
 
-`makefile` is the single entry point into the project's code. Three configurable constants are defined (feel free to change these values if needed): TOP_K which determines how many alternative tokens will be returned by GPT-4o, MAX_PAGES which controls the number of excerpts to process, and THREADS which determines how many workers will run the pipeline in parallel. OUTPUT specifies where the results are stored, but should remain as 'result'.
+`makefile` is the single entry point into the project. It defines four configuration constants: `TOP_K` (how many alternative tokens GPT-4o returns per token), `MAX_PAGES` (how many excerpts to process), `THREADS` (parallel workers), and `OUTPUT` (output directory/prefix for generated artifacts).
 
 | Constant | Purpose |
 |---|---|
@@ -71,20 +71,20 @@ gpt-logprobs-ocr-quality/
 | `src/scan2latex_entropy.py` | Scan-to-LaTeX conversion and sliding-window entropy analysis |
 | `src/utils.py` | General helper utilities |
 
-`cache` holds a file named 'cache.json' which contains an OCR-generated transcript and logprobs object which is written to by `logprobs_client.py`.
+`cache` contains `cache.json`, which stores OCR transcripts and logprobs objects written by `logprobs_client.py`.
 
-`data` holds the BLN600 dataset which is preprocessed by `preprocess_dataset.py` and loaded by `loader.py`.
+`data` contains the BLN600 dataset. It is verified and preprocessed by `preprocess_dataset.py` and loaded by `loader.py`.
 
-`notebooks` holds miscellaneous python files used for thought experiments and is not used anywhere outside of this folder.
+`notebooks` contains exploratory notebooks and is not used by the pipeline.
 
-`scripts` contains scripts for figure generation that directly use functions from files within `src/`.
+`scripts` contains figure-generation scripts that call into `src/`.
 
 ## How to Read the Repository
 
-Developers should begin with the `makefile` to trace the execution of the pipeline. `predict_quality.py` should be the focal point when trying to understand the pipeline logic, since it is the top-level entry point and calls other modules for specific functionality. In addition, each `.py` file begins with a short synopsis describing its purpose; it is intended as a brief overview rather than a full description of implementation details.
+Developers should begin with the `makefile` to trace execution. `predict_quality.py` is the best starting point for pipeline logic because it is the top-level entry point and delegates to other modules. Each `.py` file also includes a short synopsis that is intended as an overview, not a full implementation description.
 
-To follow the figure-generation process, developers should read the `scripts/` directory. For details about each figure, `docs/figures/` contains documentation describing what the figure represents, the units used, and the input data.
+To follow figure generation, read `scripts/`. For figure-specific details (meaning, units, and inputs), see `docs/figures/`.
 
-Additional README files are included in `cache/` to describe the structure of the cache and what is cached versus omitted, in `results/` to describe each generated figure and how it was created, and in `data/` to describe how to obtain the dataset.
+Additional README files are provided in `cache/` (cache structure and omissions), `results/` (generated outputs), and `data/` (dataset download and placement).
 
 For project setup and running, refer to the README file at the root of the project.

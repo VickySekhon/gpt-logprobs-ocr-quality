@@ -38,11 +38,10 @@ Each page has a unique key consisting of:
 
 ## What is Omitted
 
-No metrics are cached as they can be directly computed from the OCR-generated transcript and logprob objects.
-
+Metrics are not cached because they can be recomputed from the transcript and logprobs objects.
 
 ## How to Regenerate
 
-Once the pipeline is run once (without error), the cache will be fully populated. Subsequent pipeline runs will result in cache hits, thereby preventing new results from being generated. To compute new results obtained by querying GPT-4o, delete `cache/cache.json`.
+After a successful run, the cache is populated. Subsequent runs will use cache hits instead of re-querying GPT-4o. To force fresh OCR results, delete `cache/cache.json`.
 
-**Important**: do not clear the cache manually. The cache is designed to be deleted rather than emptied.
+**Important**: do not clear the cache manually. Delete the file instead.

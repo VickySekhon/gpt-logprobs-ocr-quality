@@ -47,4 +47,4 @@ Average Token Entropy (Bits/Token)
 
 ## Figure Importance
 
-This reduces the risk that downstream conclusions depend on a single chosen indicator and improves confidence that the analysis is robust rather than "cherry-picked".
+This reduces the risk that conclusions depend on a single indicator and increases confidence that the analysis is robust rather than selectively reported.
