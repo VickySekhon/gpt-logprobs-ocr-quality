@@ -52,7 +52,13 @@ Show exactly how to run the code from a clean machine.
 
 ### Running the Project
 
-After following instructions in **Setup**, use the following command to run the pipeline to generate an all-encompassing CSV file:
+After following instructions in **Setup**, you must download the dataset [here](https://orda.shef.ac.uk/articles/dataset/BLN600_A_Parallel_Corpus_of_Machine_Human_Transcribed_Nineteenth_Century_Newspaper_Texts/25439023). Follow the the instructions in `data/README.md` to ensure the dataset is downloaded to the correct location and named correctly. Once the dataset is downloaded, run the following command to preprocess it for OCR analysis:
+
+`make preprocess`
+
+**Important**: the command above will throw an error if you have not correctly downloaded the dataset. Pay attention to the error message to determine what step you might have missed.
+
+Use the following command to run the pipeline to generate an all-encompassing CSV file:
 
 `make run-all`
 
