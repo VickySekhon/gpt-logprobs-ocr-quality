@@ -16,9 +16,15 @@ This figure provides an alternative view of the correlation between average toke
 
 ### Output Filenames
 
-PNG: [figure_05_stratified_correlations.png](../../results/figures/figure_05_stratified_correlations.png)
+| Format | File |
+|---|---|
+| PNG | [figure_05_stratified_correlations.png](../../results/figures/figure_05_stratified_correlations.png) |
+| SVG | [figure_05_stratified_correlations.svg](../../results/figures/figure_05_stratified_correlations.svg) |
 
-SVG: [figure_05_stratified_correlations.svg](../../results/figures/figure_05_stratified_correlations.svg)
+### Other Information
+
+- Script: [stratified_analysis.py](../../scripts/stratified_analysis.py)
+- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 
 ### X-axis
 
@@ -30,19 +36,17 @@ Correlation
 
 ### Units
 
-Correlation (blue bar): Pearson
-
-Correlation (orange bar): Spearman
+| Visual element | Statistic |
+|---|---|
+| Blue bar | Pearson |
+| Orange bar | Spearman |
 
 ### Other Information
 
-Abbreviations: “n” refers to the number of samples in each quartile, and “QX” refers to the quartile index.
-
-Filtering rules: samples with a CER > 2% were filtered from the dataset.   
-
-Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
-
-Sample size: the plot consists of 100 randomized page excerpts stratified into four quartiles.
+- Abbreviations: “n” refers to the number of samples in each quartile, and “QX” refers to the quartile index.
+- Filtering rules: samples with a CER > 2% were filtered from the dataset.
+- Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
+- Sample size: the plot consists of 100 randomized page excerpts stratified into four quartiles.
 
 ### Figure Importance
 

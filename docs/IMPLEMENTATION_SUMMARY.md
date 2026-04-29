@@ -1,5 +1,10 @@
 ### What was Implemented
 
+- [What is Complete](#what-is-complete)
+- [What is Incomplete](#what-is-incomplete)
+- [Code Structure and Coupling](#code-structure-and-coupling)
+- [How to Read the Repository](#how-to-read-the-repository)
+
 The entire OCR pipeline was implemented end to end. This includes loading the BLN600 dataset, performing OCR on images using GPT-4o to obtain a transcript and a logprobs object (cached for reuse), normalizing the OCR-generated and ground-truth transcripts to calculate the character error rate (CER) between the two texts, and computing the average token entropy (bits/token). These metrics, along with additional fields (see Figure 1), are stored in a Pandas DataFrame and exported as a CSV file in [results/csv](../results/csv).
 
 Once the CSV file is generated, the metrics are consumed by figure-generation scripts. [entropy_vs_cer.py](../scripts/entropy_vs_cer.py) plots the relationship between entropy and CER, the distribution of entropy, and surprisal versus entropy as an indicator of uncertainty. [stratified_analysis.py](../scripts/stratified_analysis.py) plots entropy versus CER stratified into four quartiles based on ground-truth length and computes correlations stratified into quartiles using Pearson and Spearman coefficients. Finally, [roc_thresholds.py](../scripts/roc_thresholds.py) trains a logistic regression model on entropy values to determine an entropy threshold that separates “good” pages (CER <= 2%) from “bad” pages (CER > 2%) using an ROC curve.
@@ -42,29 +47,27 @@ gpt-logprobs-ocr-quality/
 
 `makefile` is the single entry point into the project's code. Three configurable constants are defined (feel free to change these values if needed): TOP_K which determines how many alternative tokens will be returned by GPT-4o, MAX_PAGES which controls the number of excerpts to process, and THREADS which determines how many workers will run the pipeline in parallel. OUTPUT specifies where the results are stored, but should remain as 'result'.
 
-`src` contains the following files listed alongside an overview of what they accomplish:
-```
-src/ 
-     entropy.py # Contains the entropy and surprisal calculation logic at the page-level 
-    
-     loader.py # Contains functions that load the dataset into a DataFrame as well as an image and ground-truth pair from a page-id
+| Constant | Purpose |
+|---|---|
+| `TOP_K` | Number of alternative tokens returned per token (top-k) |
+| `MAX_PAGES` | Number of excerpts to process |
+| `THREADS` | Number of parallel workers |
+| `OUTPUT` | Output path/prefix for results |
 
-     logprobs_client.py # Contains OCR logic that takes in the path to an image, prompts GPT-4o to perform OCR on the image, and saves the generated transcript and logprobs object to a local JSON cache
+`src` contains the following modules:
 
-     metrics.py # Contains the levenshtein distance and CER calculation logic
-     
-     normalization.py # Contains interactive and fixed functions that remove whitespaces, quotes/dashes, and punctuation from a both OCR-generated and ground truth texts
-
-     predict_quality.py # Contains logic that runs the entire pipeline from start-to-finish including loading the dataset, performing OCR, calculating metrics, and exporting the results to a CSV file
-
-     preprocess_dataset.py # Contains logic that verifies and prepares the dataset for processing by predict_quality.py
-
-     regression.py # Contains logic to train a logistic regression model to learn the relationship between entropy and a good page with low CER and find the binary classification threshold that maximizes sensitivity and specificity
-
-     scan2latex_entropy.py # Contains logic to load a page excerpt, convert it into latex, and then runs sliding window analysis to determine areas with most entropy
-
-     utils.py # Contains helper functions used just about everywhere in the files above
-``` 
+| File | Responsibility |
+|---|---|
+| `src/entropy.py` | Page-level entropy and surprisal calculations |
+| `src/loader.py` | Dataset loading utilities (DataFrame plus image/ground-truth retrieval by page ID) |
+| `src/logprobs_client.py` | OCR client logic and caching of transcripts and logprobs |
+| `src/metrics.py` | Levenshtein distance and CER calculations |
+| `src/normalization.py` | Normalization procedures applied to OCR and ground-truth text |
+| `src/predict_quality.py` | Pipeline orchestration: OCR, metrics, and CSV export |
+| `src/preprocess_dataset.py` | Dataset verification and preprocessing |
+| `src/regression.py` | Logistic regression and threshold selection utilities |
+| `src/scan2latex_entropy.py` | Scan-to-LaTeX conversion and sliding-window entropy analysis |
+| `src/utils.py` | General helper utilities |
 
 `cache` holds a file named 'cache.json' which contains an OCR-generated transcript and logprobs object which is written to by `logprobs_client.py`.
 

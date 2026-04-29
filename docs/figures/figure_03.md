@@ -16,9 +16,15 @@ This scatter plot compares average token entropy and average token surprisal as 
 
 ### Output Filenames
 
-PNG: [figure_03_surprisal_vs_entropy.png](../../results/figures/figure_03_surprisal_vs_entropy.png)
+| Format | File |
+|---|---|
+| PNG | [figure_03_surprisal_vs_entropy.png](../../results/figures/figure_03_surprisal_vs_entropy.png) |
+| SVG | [figure_03_surprisal_vs_entropy.svg](../../results/figures/figure_03_surprisal_vs_entropy.svg) |
 
-SVG: [figure_03_surprisal_vs_entropy.svg](../../results/figures/figure_03_surprisal_vs_entropy.svg)
+### Other Information
+
+- Script: [stratified_analysis.py](../../scripts/stratified_analysis.py)
+- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 
 ### X-axis
 
@@ -30,19 +36,17 @@ Average Token Entropy (Bits/Token)
 
 ### Units
 
-Average Token Surprisal: Bits/Token
-
-Average Token Entropy: Bits/Token
+| Field | Units |
+|---|---|
+| Average Token Surprisal | Bits/Token |
+| Average Token Entropy | Bits/Token |
 
 ### Other Information
 
-Colors: to evaluate surprisal as an alternative uncertainty indicator, surprisal and entropy values were plotted for both correctly classified and misclassified samples. Red samples are misclassified, while green samples are correctly classified.
-
-Filtering rules: samples with a CER > 2% were filtered from the dataset. Only the 20% validation split of the original 100 samples was plotted.
-
-Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
-
-Sample size: the plot illustrates the relationship between entropy and surprisal for 20 randomly selected page excerpts.
+- Colors: to evaluate surprisal as an alternative uncertainty indicator, surprisal and entropy values were plotted for both correctly classified and misclassified samples. Red samples are misclassified, while green samples are correctly classified.
+- Filtering rules: samples with a CER > 2% were filtered from the dataset. Only the 20% validation split of the original 100 samples was plotted.
+- Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
+- Sample size: the plot illustrates the relationship between entropy and surprisal for 20 randomly selected page excerpts.
 
 ### Figure Importance
 

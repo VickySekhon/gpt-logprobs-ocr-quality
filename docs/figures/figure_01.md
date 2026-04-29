@@ -16,10 +16,15 @@ This is arguably the most important figure in the paper. It illustrates the rela
 
 ### Output Filenames
 
-PNG: [figure_01_entropy_vs_cer.png](../../results/figures/figure_01_entropy_vs_cer.png)
+| Format | File |
+|---|---|
+| PNG | [figure_01_entropy_vs_cer.png](../../results/figures/figure_01_entropy_vs_cer.png) |
+| SVG | [figure_01_entropy_vs_cer.svg](../../results/figures/figure_01_entropy_vs_cer.svg) |
 
-SVG: [figure_01_entropy_vs_cer.svg](../../results/figures/figure_01_entropy_vs_cer.svg)
+### Other Information
 
+- Script: [entropy_vs_cer.py](../../scripts/entropy_vs_cer.py)
+- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 
 ### X-axis
 
@@ -31,9 +36,10 @@ Character Error Rate (CER)
 
 ### Units
 
-Character Error Rate (CER): %
-
-Average Token Entropy: Bits/Token
+| Field | Units |
+|---|---|
+| Average Token Entropy | Bits/Token |
+| Character Error Rate (CER) | % |
 
 ### Other Information
 

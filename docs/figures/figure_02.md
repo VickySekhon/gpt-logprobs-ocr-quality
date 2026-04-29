@@ -16,9 +16,15 @@ This figure shows GPT-4o's entropy levels after performing OCR on many page exce
 
 ### Output Filenames
 
-PNG: [figure_02_entropy_distribution.png](../../results/figures/figure_02_entropy_distribution.png)
+| Format | File |
+|---|---|
+| PNG | [figure_02_entropy_distribution.png](../../results/figures/figure_02_entropy_distribution.png) |
+| SVG | [figure_02_entropy_distribution.svg](../../results/figures/figure_02_entropy_distribution.svg) |
 
-SVG: [figure_02_entropy_distribution.svg](../../results/figures/figure_02_entropy_distribution.svg)
+### Other Information
+
+- Script: [entropy_vs_cer.py](../../scripts/entropy_vs_cer.py)
+- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 
 ### X-axis
 
@@ -30,9 +36,10 @@ Frequency
 
 ### Units
 
-Average Token Entropy: Bits/Token
-
-Frequency: Scalar value
+| Field | Units |
+|---|---|
+| Average Token Entropy | Bits/Token |
+| Frequency | Count |
 
 ### Other Information
 

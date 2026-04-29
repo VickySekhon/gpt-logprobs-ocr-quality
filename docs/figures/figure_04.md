@@ -16,9 +16,15 @@ This figure evaluates whether page length affects the relationship between avera
 
 ### Output Filenames
 
-PNG: [figure_04_entropy_vs_cer_stratified.png](../../results/figures/figure_04_entropy_vs_cer_stratified.png)
+| Format | File |
+|---|---|
+| PNG | [figure_04_entropy_vs_cer_stratified.png](../../results/figures/figure_04_entropy_vs_cer_stratified.png) |
+| SVG | [figure_04_entropy_vs_cer_stratified.svg](../../results/figures/figure_04_entropy_vs_cer_stratified.svg) |
 
-SVG: [figure_04_entropy_vs_cer_stratified.svg](../../results/figures/figure_04_entropy_vs_cer_stratified.svg)
+### Other Information
+
+- Script: [stratified_analysis.py](../../scripts/stratified_analysis.py)
+- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 
 ### X-axis
 
@@ -34,15 +40,18 @@ Average Token Entropy: bits/token
 
 Character Error Rate: %
 
-### Other Information
-
 Sample size: the plot consists of 100 randomized page excerpts. 
 
-Abbreviations: Q1 represents quartile 1 consisting of 25 samples having the shortest ground-truth page length, Q2 represents quartile 2 consisting of 25 samples having the next shortest ground-truth page length, Q3 represents quartile 3 consisting of 25 samples having the next shortest ground-truth page length, and Q4 represents quartile 4 consisting of 25 samples having the longest ground-truth page length.
+Abbreviations:
+
+| Label | Description |
+|---|---|
+| Q1 | Quartile 1 (shortest ground-truth length; 25 samples) |
+| Q2 | Quartile 2 (next shortest ground-truth length; 25 samples) |
+| Q3 | Quartile 3 (next shortest ground-truth length; 25 samples) |
+| Q4 | Quartile 4 (longest ground-truth length; 25 samples) |
 
 Filtering rules: samples with a CER > 2% were filtered from the dataset.   
-
-Normalization choices: whitespaces were normalized, punctuation was removed entirely, and all characters were converted to lowercase between ground-truth and ocr texts.
 
 Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
 

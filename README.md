@@ -1,5 +1,14 @@
 ## BLN600: GPT Log-Probabilities as Predictors of OCR Quality
 
+### Contents
+
+- [About](#about)
+- [Dataset](#dataset)
+- [Setup](#setup)
+- [Running the Project](#running-the-project)
+- [Results](#results)
+- [Figure Index](#figure-index)
+
 ### About
 
 Modern OCR systems sometimes return poor text, especially for older print. When a language model reads a page, it not only predicts tokens but also provides probabilities for alternatives. By converting those probabilities into a single entropy value per token (higher values indicate more uncertainty) and averaging across the page, it is possible to compute a simple uncertainty score. This project tests whether that score can flag pages that are likely to have high OCR error, so teams can accept clean pages automatically and review risky pages.
@@ -40,27 +49,37 @@ Chocolatey is a package manager that can be used to install `make`. Follow the C
 
 Before beginning, create a virtual environment named `venv` using the command:
 
-`python -m venv venv`
+```bash
+python -m venv venv
+```
 
 Then run the following command to install the required dependencies: 
 
-`make install`
+```bash
+make install
+```
 
 ### Running the Project
 
 After following the instructions in **Setup**, download the dataset [here](https://orda.shef.ac.uk/articles/dataset/BLN600_A_Parallel_Corpus_of_Machine_Human_Transcribed_Nineteenth_Century_Newspaper_Texts/25439023). Follow the instructions in `data/README.md` to ensure the dataset is downloaded to the correct location and named correctly. Once the dataset is downloaded, run the following command to preprocess it for OCR analysis:
 
-`make preprocess`
+```bash
+make preprocess
+```
 
 **Important**: the command above will fail if the dataset has not been downloaded correctly. Use the error message to determine which step may have been missed.
 
 Use the following command to run the pipeline to generate an all-encompassing CSV file:
 
-`make run-all`
+```bash
+make run-all
+```
 
 To generate figures and tables from your results CSV file run the following command:
 
-`make figs`
+```bash
+make figs
+```
 
 **Note**: the command above will not work unless you run `make run-all` beforehand.
 
@@ -78,11 +97,11 @@ project/
       tables/
 ```
 
-**csv/**: contains the output from `make run-all`
-
-**figures/**: contains the output from `make figs`
-
-**tables/**: contains the output from `make figs`
+| Folder | Produced by | Description |
+|---|---|---|
+| `results/csv/` | `make run-all` | Per-page metrics exported as CSV |
+| `results/figures/` | `make figs` | Generated figures (PNG/SVG) |
+| `results/tables/` | `make figs` | Generated tables (PNG) |
 
 ### Figure Index
 

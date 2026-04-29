@@ -2,7 +2,7 @@
 
 The OCR output from GPT-4o is cached in `cache/cache.json` along with an array of logprobs objects. Each logprobs object contains the generated token and `k-1` alternatives, along with their log probabilities for a given page:
 
-```
+```json
 {
      page-id_model_top-k_prompt-version: {
           transcript: "",
@@ -29,10 +29,12 @@ The OCR output from GPT-4o is cached in `cache/cache.json` along with an array o
 
 Each page has a unique key consisting of:
 
-- page-id
-- model used (`GPT-4o` in research experiments)
-- top-k (`10` used in research experiments)
-- prompt-version (`v1` used in research experiments)
+| Component | Description |
+|---|---|
+| `page-id` | Page identifier |
+| `model` | Model used (for example, `GPT-4o` in research experiments) |
+| `top-k` | Number of alternatives stored per token (for example, `10` in research experiments) |
+| `prompt-version` | Prompt identifier (for example, `v1` in research experiments) |
 
 ### What is Omitted
 

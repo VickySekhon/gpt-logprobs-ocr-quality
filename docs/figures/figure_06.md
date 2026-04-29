@@ -16,9 +16,15 @@ This figure shows entropy thresholds along with their true positive rates (TPRs)
 
 ### Output Filenames
 
-PNG: [figure_06_roc_entropy.png](../../results/figures/figure_06_roc_entropy.png)
+| Format | File |
+|---|---|
+| PNG | [figure_06_roc_entropy.png](../../results/figures/figure_06_roc_entropy.png) |
+| SVG | [figure_06_roc_entropy.svg](../../results/figures/figure_06_roc_entropy.svg) |
 
-SVG: [figure_06_roc_entropy.svg](../../results/figures/figure_06_roc_entropy.svg)
+### Other Information
+
+- Script: [roc_thresholds.py](../../scripts/roc_thresholds.py)
+- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 
 ### X-axis
 
@@ -30,17 +36,16 @@ True Positive Rate
 
 ### Units
 
-False Positive Rate: scalar
-
-True Positive Rate: scalar
+| Field | Units |
+|---|---|
+| False Positive Rate | Proportion |
+| True Positive Rate | Proportion |
 
 ### Other Information
 
-Filtering rules: samples with a CER > 2% were filtered from the dataset.
-
-Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
-
-Sample size: the plot illustrates the ROC for 20 randomized-page excerpts which is the same as the validation set size after splitting the original 100 excerpts into an 80/20 training-test split.
+- Filtering rules: samples with a CER > 2% were filtered from the dataset.
+- Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
+- Sample size: the plot illustrates the ROC for 20 randomized page excerpts, which is the validation split size after splitting the original 100 excerpts into an 80/20 training–test split.
 
 ### Figure Importance
 

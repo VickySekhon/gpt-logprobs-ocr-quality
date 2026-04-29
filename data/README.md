@@ -14,7 +14,9 @@
 1) Open a terminal in your Downloads folder (or provide the full path to the zip).
 2) Extract with password:
 
-`unzip BLN600.zip -d bln600`
+```bash
+unzip BLN600.zip -d bln600
+```
 
 3) Enter password `BLN600` when prompted.
 
@@ -42,11 +44,15 @@ Ensure you are at the root of the project directory then follow the commands bel
 
 #### Windows
 
-`Copy-Item -Path "C:\path\to\bln600\*" -Destination ".\data\" -Recurse`
+```powershell
+Copy-Item -Path "C:\path\to\bln600\*" -Destination ".\data\" -Recurse
+```
 
-#### MacOS/Linux
+#### macOS/Linux
 
-`cp -r /path/to/bln600/. ./data/`
+```bash
+cp -r /path/to/bln600/. ./data/
+```
 
 **Note**: the following files are not required to run the pipeline and can be safely deleted:
 
