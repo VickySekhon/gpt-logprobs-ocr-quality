@@ -1,6 +1,6 @@
 ### What is Cached
 
-The OCR output from GPT-4o is cached in `cache/cache.json` along with an array of logprobs objects consisting of the generated token and `k-1` alternatives, along with their log probabilities for a given page:
+The OCR output from GPT-4o is cached in `cache/cache.json` along with an array of logprobs objects. Each logprobs object contains the generated token and `k-1` alternatives, along with their log probabilities for a given page:
 
 ```
 {
@@ -41,6 +41,6 @@ No metrics are cached as they can be directly computed from the OCR-generated tr
 
 ### How to Regenerate
 
-Once the pipeline is run once (without error), the cache will be fully populated and subsequent runs of the pipeline will result in cache-hits therefore preventing any novel results from being generated. To compute new results obtained by querying GPT-4o, the `cache/cache.json` file can be deleted.
+Once the pipeline is run once (without error), the cache will be fully populated. Subsequent pipeline runs will result in cache hits, thereby preventing new results from being generated. To compute new results obtained by querying GPT-4o, delete `cache/cache.json`.
 
-**Important**: refrain from clearing the cache manually, it is designed to be deleted rather than emptied. 
+**Important**: do not clear the cache manually. The cache is designed to be deleted rather than emptied.

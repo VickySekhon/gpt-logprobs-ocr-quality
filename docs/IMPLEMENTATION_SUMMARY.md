@@ -1,8 +1,8 @@
 ### What was Implemented
 
-The entire OCR pipeline was successfully implemented, including the loading the BLN600 dataset, performing OCR on the images using GPT-4o to obtain a transcript, and a logprobs object that is cached for reuse, normalizing the OCR-generated and ground-truth transcripts to calculate the Character Error Rate (CER) between the two texts, calculating the Average Token Entropy (Bits/Token), and storing these metrics along with others (see figure 1.) inside a Pandas DataFrame exported as a csv file inside [results/csv](../results/csv).
+The entire OCR pipeline was implemented end to end. This includes loading the BLN600 dataset, performing OCR on images using GPT-4o to obtain a transcript and a logprobs object (cached for reuse), normalizing the OCR-generated and ground-truth transcripts to calculate the character error rate (CER) between the two texts, and computing the average token entropy (bits/token). These metrics, along with additional fields (see Figure 1), are stored in a Pandas DataFrame and exported as a CSV file in [results/csv](../results/csv).
 
-Once the CSV file is generated, the metrics are consumed by [entropy_vs_cer.py](../scripts/entropy_vs_cer.py) to plot the relationship between entropy and CER, the distribution of entropy, and the use of surprisal vs entropy as an indicator of uncertainty. And [stratified_analysis.py](../scripts/stratified_analysis.py) to plot the relationship between entropy and cer stratified into four quartiles based on ground-truth length, and to plot the correlations between the entropy and cer stratified into four quartiles using pearson and spearman coefficients. And finally, [roc_thresholds.py](../scripts/roc_thresholds.py) to train a logistic regression model on the entropy levels in the data to determine what threshold of entropy constitutes a good page (which has a CER <= 2%) versus a bad page (which has a CER > 2%) with the ROC curve. 
+Once the CSV file is generated, the metrics are consumed by figure-generation scripts. [entropy_vs_cer.py](../scripts/entropy_vs_cer.py) plots the relationship between entropy and CER, the distribution of entropy, and surprisal versus entropy as an indicator of uncertainty. [stratified_analysis.py](../scripts/stratified_analysis.py) plots entropy versus CER stratified into four quartiles based on ground-truth length and computes correlations stratified into quartiles using Pearson and Spearman coefficients. Finally, [roc_thresholds.py](../scripts/roc_thresholds.py) trains a logistic regression model on entropy values to determine an entropy threshold that separates “good” pages (CER <= 2%) from “bad” pages (CER > 2%) using an ROC curve.
 
 **Figure 1. Per-page record schema stored in the results CSV**
 | Field |
@@ -76,10 +76,10 @@ src/
 
 ### How to Read the Repository
 
-Developers should begin at the makefile to trace the execution of the pipeline. `predict_quality.py` should be the focal point when trying to understand the pipeline's logic, it is at the top-level of the pipeline and calls other scripts for specific functionality. Furthermore, at the top of every `.py` file there is a short synopsis that will help Developers understand what the file accomplishes, think of it as metaphorically similar to the summary of a book, as it is simply a top-level overview that leaves out specific details.
+Developers should begin with the `makefile` to trace the execution of the pipeline. `predict_quality.py` should be the focal point when trying to understand the pipeline logic, since it is the top-level entry point and calls other modules for specific functionality. In addition, each `.py` file begins with a short synopsis describing its purpose; it is intended as a brief overview rather than a full description of implementation details.
 
-To follow the process of figure generation, Developers should read the `scripts/` directory. For details about each figure, the `docs/figures` contains specific information that elaborates on what the figure represents, the units used, the input data, etc.
+To follow the figure-generation process, developers should read the `scripts/` directory. For details about each figure, `docs/figures/` contains documentation describing what the figure represents, the units used, and the input data.
 
-README files are purposely created within `cache/` to describe the structure of the cache and what data is cached versus omitted, `results/` to describe each generated figure and how it was created, `data/` to describe the entire process of how to obtain the dataset.
+Additional README files are included in `cache/` to describe the structure of the cache and what is cached versus omitted, in `results/` to describe each generated figure and how it was created, and in `data/` to describe how to obtain the dataset.
 
 For project setup and running, refer to the README file at the root of the project.

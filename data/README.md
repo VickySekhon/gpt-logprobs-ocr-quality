@@ -6,14 +6,16 @@
 
 #### Windows 
 
-1) Right click the file in Downloads and click `Extract All...`, choosing where to extract.
+1) Right-click the file in Downloads and click `Extract All...`, choosing where to extract.
 2) Enter password `BLN600` when prompted.
 
-#### MacOS/Linux
+#### macOS/Linux
 
 1) Open a terminal in your Downloads folder (or provide the full path to the zip).
 2) Extract with password:
+
 `unzip BLN600.zip -d bln600`
+
 3) Enter password `BLN600` when prompted.
 
 #### Rename Folders
