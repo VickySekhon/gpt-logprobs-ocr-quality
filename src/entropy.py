@@ -40,7 +40,7 @@ def token_entropies_from_logprobs(token_logprobs):
         token_entropies.append(token_entropy)
     return token_entropies
 
-
+# Calculates surprisal from a single token
 def surprisal_from_logprobs(token_logprobs):
     assert (
         token_logprobs != {}

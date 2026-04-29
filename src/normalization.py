@@ -34,7 +34,6 @@ def normalize_quotes_and_dashes(text: str) -> str:
 def strip_punctuation(text: str) -> str:
     """
     Remove ASCII punctuation. Use only if CER should ignore punctuation.
-    If you want to preserve apostrophes/hyphens, adjust the regex.
     """
     return re.sub(r"[^\w\s]", "", text)
 
@@ -97,9 +96,6 @@ def normalize_text(ocr, ground_truth, normalization_type):
 def normalize_text_all(ocr, ground_truth):
     ocr = normalize_whitespace(ocr)
     ground_truth = normalize_whitespace(ground_truth)
-    # TODO: see if you need the two lines below
-    ocr = normalize_quotes_and_dashes(ocr)
-    ground_truth = normalize_quotes_and_dashes(ground_truth)
     ocr = strip_punctuation(ocr)
     ground_truth = strip_punctuation(ground_truth)
     ocr = lowercase(ocr)
