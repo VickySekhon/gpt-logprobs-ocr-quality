@@ -1,9 +1,11 @@
-### What was Implemented
-
+## Contents
+- [What was Implemented](#what-was-implemented)
 - [What is Complete](#what-is-complete)
 - [What is Incomplete](#what-is-incomplete)
 - [Code Structure and Coupling](#code-structure-and-coupling)
 - [How to Read the Repository](#how-to-read-the-repository)
+
+## What was Implemented
 
 The entire OCR pipeline was implemented end to end. This includes loading the BLN600 dataset, performing OCR on images using GPT-4o to obtain a transcript and a logprobs object (cached for reuse), normalizing the OCR-generated and ground-truth transcripts to calculate the character error rate (CER) between the two texts, and computing the average token entropy (bits/token). These metrics, along with additional fields (see Figure 1), are stored in a Pandas DataFrame and exported as a CSV file in [results/csv](../results/csv).
 
@@ -22,18 +24,18 @@ Once the CSV file is generated, the metrics are consumed by figure-generation sc
 | `gt_length` |
 | `normalization_profile` |
 
-### What is Complete
+## What is Complete
 
 - Entire OCR pipeline from start-to-finish
 - Robust figure generation
 - Centralized makefile execution point 
 - Comprehensive documentation outlining figures and their purposes, project structure, and commands for setting up and running the pipeline 
 
-### What is Incomplete
+## What is Incomplete
 
 N/A
 
-### Code Structure and Coupling
+## Code Structure and Coupling
 
 ```
 gpt-logprobs-ocr-quality/
@@ -77,7 +79,7 @@ gpt-logprobs-ocr-quality/
 
 `scripts` contains scripts for figure generation that directly use functions from files within `src/`.
 
-### How to Read the Repository
+## How to Read the Repository
 
 Developers should begin with the `makefile` to trace the execution of the pipeline. `predict_quality.py` should be the focal point when trying to understand the pipeline logic, since it is the top-level entry point and calls other modules for specific functionality. In addition, each `.py` file begins with a short synopsis describing its purpose; it is intended as a brief overview rather than a full description of implementation details.
 

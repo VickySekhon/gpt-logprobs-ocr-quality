@@ -1,15 +1,15 @@
-### How to Obtain the Dataset
+## How to Obtain the Dataset
 
 1) Navigate [here](https://orda.shef.ac.uk/articles/dataset/BLN600_A_Parallel_Corpus_of_Machine_Human_Transcribed_Nineteenth_Century_Newspaper_Texts/25439023)
 2) Find and click the button that says `Download all`
 3) Find the downloaded zip file on your machine and extract it by doing the following:
 
-#### Windows 
+### Windows
 
 1) Right-click the file in Downloads and click `Extract All...`, choosing where to extract.
 2) Enter password `BLN600` when prompted.
 
-#### macOS/Linux
+### macOS/Linux
 
 1) Open a terminal in your Downloads folder (or provide the full path to the zip).
 2) Extract with password:
@@ -20,7 +20,7 @@ unzip BLN600.zip -d bln600
 
 3) Enter password `BLN600` when prompted.
 
-#### Rename Folders
+### Rename Folders
 
 The extracted ZIP archive contents will look like follows:
 ```
@@ -38,7 +38,7 @@ The pipeline expects a separate naming convention. Please name folders manually 
 - `Images` -> `images`
 - `OCR Text` -> `ocr-text`
 
-#### Copy Folders to Project Directory
+### Copy Folders to Project Directory
 
 Ensure you are at the root of the project directory then follow the commands below.
 
