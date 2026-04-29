@@ -38,8 +38,6 @@ Frequency
 
 ## Other Information
 
-- Script: [entropy_vs_cer.py](../../scripts/entropy_vs_cer.py)
-- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 - Filtering rules: samples with a CER > 2% were filtered from the dataset.
 - Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
 - Sample size: the plot illustrates the distribution of entropy across 100 randomly selected page excerpts.

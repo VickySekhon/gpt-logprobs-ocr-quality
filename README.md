@@ -13,25 +13,27 @@
 
 Modern OCR systems sometimes return poor text, especially for older print. When a language model reads a page, it not only predicts tokens but also provides probabilities for alternatives. By converting those probabilities into a single entropy value per token (higher values indicate more uncertainty) and averaging across the page, it is possible to compute a simple uncertainty score. This project tests whether that score can flag pages that are likely to have high OCR error, so teams can accept clean pages automatically and review risky pages.
 
-This project provides a complete pipeline to measure the quality of OCR performed by GPT-4o on nineteenth-century English newspapers. The pipeline works as follows:
+This project provides a pipeline to measure the quality of OCR performed by GPT-4o on nineteenth-century English newspapers. The pipeline performs the following steps:
 
-1. Loads images for OCR along with corresponding ground truth texts from the dataset containing 19th century English newspapers.
-2. Prompts GPT-4o to perform OCR on the image and return the text along with a logprobs object that represents the distribution of probabilities for each token.
-3. Calculates the model's uncertainty (entropy) per token from the logprobs object, and averages the uncertainty to arrive at a page-level metric.
-4. Normalizes both the ground truth and the OCR-generated texts and then computes a character error rate (CER) statistic that measures their differences using the Levenshtein distance.
-5. Writes `page_id`, `avg_bits_per_token`, `avg_surprisal_per_token`, `total_bits`, `n_tokens`, `cer`, `levenshtein`, `gt_length`, and `normalization_profile` to a Pandas DataFrame for visualization.
-6. Creates visualizations to help identify the relationship between OCR quality (measured by CER) and model uncertainty (measured by average token entropy in bits/token) by plotting:
-   - The relationship between entropy and CER.
+1. Loads images for OCR and their corresponding ground-truth texts.
+2. Prompts GPT-4o to perform OCR and return the text alongside a logprobs object (representing the probability distribution for each token).
+3. Calculates the model's token-level uncertainty (entropy) from the logprobs object and averages it to produce a page-level metric.
+4. Normalizes the ground-truth and OCR-generated texts, then computes the character error rate (CER) using Levenshtein distance.
+5. Writes the resulting metrics (`page_id`, `avg_bits_per_token`, `cer`, `levenshtein`, etc.) to a Pandas DataFrame.
+6. Generates visualizations to explore the relationship between OCR quality (CER) and model uncertainty (average token entropy), including:
+   - The overall relationship between entropy and CER.
    - The distribution of entropy across page excerpts.
-   - Average surprisal per token versus average entropy per token as an indicator of model uncertainty.
-   - A scatter plot showcasing the effect of the length of page excerpts on the relationship between entropy and CER.
-   - The computed correlations between entropy and CER across different page lengths using two correlation coefficients (Pearson and Spearman).
-   - An ROC curve that determines the entropy threshold that maximizes specificity and sensitivity for a logistic regression model that classifies pages as good if they have a CER <= 2%.
-   - A table comparing the performance of the Youden J and Min Error statistics to make a guided decision about which statistic to use when selecting a binary classification threshold.
+   - Average surprisal versus average entropy as uncertainty indicators.
+   - The effect of page length on the entropy-CER relationship.
+   - Pearson and Spearman correlations across different page lengths.
+   - An ROC curve determining the optimal entropy threshold for classifying pages as "good" (CER <= 2%).
+   - A comparison of Youden J and Min Error statistics for selecting a binary classification threshold.
 
 ## Dataset
 
-The [BLN600 dataset](https://aclanthology.org/2024.lrec-main.219.pdf) was used to perform OCR for the purposes of this research project. The BLN600 dataset is a corpus of nineteenth-century newspaper text focused on crime in London, derived from the Gale British Library Newspapers corpus parts 1 and 2. The corpus comprises 600 newspaper excerpts and for each excerpt contains the original source image, the machine transcription of that image as found in the BLN and a gold standard manual transcription that we have created. The corpus was intended for the training and development of OCR and post-OCR correction methodologies for historical newspaper machine transcription—for which there is currently a dearth of publicly available resources.
+This project uses the [BLN600 dataset](https://aclanthology.org/2024.lrec-main.219.pdf) for OCR evaluation. Below is its description from the BLN600 whitepaper:
+
+"The BLN600 dataset is a corpus of nineteenth-century newspaper text focused on crime in London, derived from the Gale British Library Newspapers corpus parts 1 and 2. The corpus comprises 600 newspaper excerpts and for each excerpt contains the original source image, the machine transcription of that image as found in the BLN and a gold standard manual transcription that we have created. The corpus was intended for the training and development of OCR and post-OCR correction methodologies for historical newspaper machine transcription—for which there is currently a dearth of publicly available resources."
 
 ## Setup
 
@@ -61,29 +63,29 @@ make install
 
 ## Running the Project
 
-After following the instructions in **Setup**, download the dataset [here](https://orda.shef.ac.uk/articles/dataset/BLN600_A_Parallel_Corpus_of_Machine_Human_Transcribed_Nineteenth_Century_Newspaper_Texts/25439023). Follow the instructions in `data/README.md` to ensure the dataset is downloaded to the correct location and named correctly. Once the dataset is downloaded, run the following command to preprocess it for OCR analysis:
+First, download the dataset [here](https://orda.shef.ac.uk/articles/dataset/BLN600_A_Parallel_Corpus_of_Machine_Human_Transcribed_Nineteenth_Century_Newspaper_Texts/25439023). Read `data/README.md` for guidance on placing and naming it correctly within the project directory. 
+
+After placing the dataset, preprocess it for OCR analysis:
 
 ```bash
 make preprocess
 ```
 
-**Important**: the command above will fail if the dataset has not been downloaded correctly. Use the error message to determine which step may have been missed.
+**Note**: This command fails if the dataset is missing or misnamed. Read the error message to troubleshoot.
 
-Use the following command to run the pipeline to generate an all-encompassing CSV file:
+Next, run the full pipeline to parse OCR results and compute metrics in a unified CSV file:
 
 ```bash
 make run-all
 ```
 
-To generate figures and tables from your results CSV file run the following command:
+Finally, generate the figures and tables from the output CSV:
 
 ```bash
 make figs
 ```
 
-**Note**: the command above will not work unless you run `make run-all` beforehand.
-
-**Important**: if figures and tables have already been generated and need to be regenerated, run `make clean`. This removes previously generated figures and tables.
+**Important**: To regenerate charts, run `make clean` first to clear previously produced outputs.
 
 ## Results
 
@@ -116,3 +118,6 @@ The following are each of the figures generated by this project along with the p
 | figure_05_stratified_correlations.png | stratified_analysis.py | figure_05.md |
 | figure_06_roc_entropy.png | roc_thresholds.py | figure_06.md |
 
+## References
+
+- Booth, Callum; Thomas, Alan; Gaizauskas, Robert (2024). BLN600: A Parallel Corpus of Machine/Human Transcribed Nineteenth Century Newspaper Texts. The University of Sheffield. Dataset. https://doi.org/10.15131/shef.data.25439023.v2

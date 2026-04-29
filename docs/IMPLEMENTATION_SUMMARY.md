@@ -7,7 +7,7 @@
 
 ## What was Implemented
 
-The OCR pipeline was implemented end to end. It loads the BLN600 dataset, performs OCR on images using GPT-4o to obtain a transcript plus a logprobs object (cached for reuse), normalizes the OCR-generated and ground-truth transcripts to compute character error rate (CER), and computes average token entropy (bits/token). These metrics, along with additional fields (see Figure 1), are stored in a Pandas DataFrame and exported to [results/csv](../results/csv).
+The pipeline operates end to end. It loads the BLN600 dataset, performs OCR with GPT-4o to retrieve transcripts and logprob data (cached for reuse), computes character error rate (CER) from normalized texts, and calculates average token entropy. These metrics and supporting fields (Figure 1) are saved to a Pandas DataFrame and exported to [results/csv](../results/csv).
 
 Once the CSV is generated, figure scripts consume it. [entropy_vs_cer.py](../scripts/entropy_vs_cer.py) plots entropy versus CER, the entropy distribution, and surprisal versus entropy as an additional uncertainty indicator. [stratified_analysis.py](../scripts/stratified_analysis.py) stratifies pages into four quartiles by ground-truth length, plots entropy versus CER by quartile, and computes Pearson and Spearman correlations per quartile. Finally, [roc_thresholds.py](../scripts/roc_thresholds.py) trains a logistic regression model on entropy values and uses an ROC curve to choose an entropy threshold that separates “good” pages (CER <= 2%) from “bad” pages (CER > 2%).
 
@@ -81,10 +81,8 @@ gpt-logprobs-ocr-quality/
 
 ## How to Read the Repository
 
-Developers should begin with the `makefile` to trace execution. `predict_quality.py` is the best starting point for pipeline logic because it is the top-level entry point and delegates to other modules. Each `.py` file also includes a short synopsis that is intended as an overview, not a full implementation description.
+Start from the `makefile` to see high-level configurations and pipeline targets. Following that, review `predict_quality.py`. This is the top-level Python orchestration module guiding all logic. Each Python file contains an introductory synopsis to provide context, rather than detailed technical walkthroughs.
 
-To follow figure generation, read `scripts/`. For figure-specific details (meaning, units, and inputs), see `docs/figures/`.
+Review `scripts/` to understand the chart creation logic. Refer to `docs/figures/` for deeper detail on individual figures like variable relationships and dataset scaling.
 
-Additional README files are provided in `cache/` (cache structure and omissions), `results/` (generated outputs), and `data/` (dataset download and placement).
-
-For project setup and running, refer to the README file at the root of the project.
+Additional standalone READMEs explain caching (`cache/`), datasets (`data/`), and metrics output folders (`results/`).

@@ -38,8 +38,6 @@ Character Error Rate (CER)
 
 ## Other Information
 
-- Script: [entropy_vs_cer.py](../../scripts/entropy_vs_cer.py)
-- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 - Regression line: a line of best fit intended to summarize the relationship between entropy and CER.
 - Color: the red regression line contrasts with the blue data points.
 - Filtering rules: samples with a CER > 1% were filtered from the dataset.

@@ -38,8 +38,6 @@ True Positive Rate
 
 ## Other Information
 
-- Script: [roc_thresholds.py](../../scripts/roc_thresholds.py)
-- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 - Filtering rules: samples with a CER > 2% were filtered from the dataset.
 - Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
 - Sample size: the plot illustrates the ROC for 20 randomized page excerpts, which is the validation split size after splitting the original 100 excerpts into an 80/20 training–test split.

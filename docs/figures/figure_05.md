@@ -38,8 +38,6 @@ Correlation
 
 ## Other Information
 
-- Script: [stratified_analysis.py](../../scripts/stratified_analysis.py)
-- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 - Abbreviations: “n” refers to the number of samples in each quartile, and “QX” refers to the quartile index.
 - Filtering rules: samples with a CER > 2% were filtered from the dataset.
 - Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.

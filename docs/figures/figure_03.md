@@ -38,8 +38,6 @@ Average Token Entropy (Bits/Token)
 
 ## Other Information
 
-- Script: [stratified_analysis.py](../../scripts/stratified_analysis.py)
-- Input: [results_k_10.csv](../../results/csv/results_k_10.csv)
 - Colors: to evaluate surprisal as an alternative uncertainty indicator, surprisal and entropy values were plotted for both correctly classified and misclassified samples. Red samples are misclassified, while green samples are correctly classified.
 - Filtering rules: samples with a CER > 2% were filtered from the dataset. Only the 20% validation split of the original 100 samples was plotted.
 - Normalization choices: whitespace was normalized, punctuation was removed entirely, and all characters were converted to lowercase for both ground-truth and OCR texts.
