@@ -46,7 +46,7 @@ def chat(
     client,
     model,
     top_k,
-    temperature=0.5,
+    temperature=0,
     top_p=0.9,
     n=1,
     seed=12345,
@@ -62,7 +62,7 @@ def chat(
                 "temperature": temperature,
                 # Model looks at the top 90% of tokens it generates
                 "top_p": top_p,
-                # Controls how much model repeats itself (-2 - 2, with '+' value being penalize for repetition
+                # Determines how many completions the model generates
                 "n": n,
                 "seed": seed,
                 "max_tokens": max_tokens,
